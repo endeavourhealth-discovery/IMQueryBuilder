@@ -1,14 +1,16 @@
 <template>
   <Card>
     <template #title>Title</template>
-    <template #content>Content</template>
+    <template #content><QueryBuilder /></template>
   </Card>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import QueryBuilder from "@/components/querybuilder/QueryBuilder.vue";
 export default defineComponent({
-  name: "Home"
+  name: "Home",
+  components: { QueryBuilder }
 });
 </script>
 
