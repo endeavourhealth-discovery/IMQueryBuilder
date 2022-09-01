@@ -9,7 +9,7 @@ const APP_TITLE = "IM Query Builder";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/",
+    path: "/querybuilder",
     name: "Home",
     component: Home
   },

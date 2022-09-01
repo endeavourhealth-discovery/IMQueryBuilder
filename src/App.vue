@@ -7,7 +7,7 @@
       <TopBar>
         <template #content>
           <div id="topbar-content-container">
-            <span class="title"><strong>IM Skeleton</strong></span>
+            <span class="title"><strong>IM Query Builder</strong></span>
             <Button
               v-if="isLoggedIn && currentUser && currentUser.roles.includes('IMAdmin')"
               icon="pi pi-cog"
@@ -29,48 +29,102 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 import ReleaseNotes from "@/components/releaseNotes/ReleaseNotes.vue";
-import { mapState } from "vuex";
+import { Services } from "im-library";
+import { useStore } from "vuex";
+import { useToast } from "primevue/usetoast";
+import axios from "axios";
+const { FilerService } = Services;
+const filerService = new FilerService(axios);
 
 export default defineComponent({
   name: "App",
   components: { ReleaseNotes },
-  computed: mapState(["currentUser", "isLoggedIn"]),
-  async mounted() {
-    // check for user and log them in if found or logout if not
-    this.loading = true;
-    await this.$store.dispatch("authenticateCurrentUser");
-    this.loading = false;
-  },
-  data() {
-    return {
-      loading: true
-    };
-  },
-  methods: {
-    openAdminMenu(event: any): void {
-      (this.$refs.adminMenu as any).toggle(event);
-    },
-    getAdminItems(): any[] {
+  setup(_props, _ctx) {
+    const toast = useToast();
+    const store = useStore();
+    const currentUser = computed(() => store.state.currentUser);
+    const isLoggedIn = computed(() => store.state.isLoggedIn);
+
+    const loading = ref(true);
+    const adminMenu = ref(null);
+
+    onMounted(async () => {
+      loading.value = true;
+      await store.dispatch("authenticateCurrentUser");
+      loading.value = false;
+    });
+
+    function openAdminMenu(event: any): void {
+      (adminMenu as any).value.toggle(event);
+    }
+
+    function getAdminItems(): any[] {
       return [
         {
           label: "Download changes",
           icon: "fa-solid fa-fw fa-cloud-arrow-down",
-          command: () => this.downloadChanges()
+          command: () => downloadChanges()
         }
       ];
-    },
-    async downloadChanges() {
-      this.$toast.add({ severity: "info", summary: "Preparing download", detail: "Zipping delta files for download...", life: 3000 });
-      let blob = await this.$filerService.downloadDeltas();
+    }
+
+    async function downloadChanges() {
+      toast.add({ severity: "info", summary: "Preparing download", detail: "Zipping delta files for download...", life: 3000 });
+      let blob = await filerService.downloadDeltas();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = "deltas.zip";
       link.click();
     }
+
+    return {
+      currentUser,
+      isLoggedIn,
+      loading,
+      adminMenu,
+      openAdminMenu,
+      getAdminItems,
+      downloadChanges
+    };
   }
+  // computed: mapState(["currentUser", "isLoggedIn"]),
+  // async mounted() {
+  //   // check for user and log them in if found or logout if not
+  //   this.loading = true;
+  //   await this.$store.dispatch("authenticateCurrentUser");
+  //   this.loading = false;
+  // },
+  // data() {
+  //   return {
+  //     loading: true
+  //   };
+  // },
+  // methods: {
+  // openAdminMenu(event: any): void {
+  //   (this.$refs.adminMenu as any).toggle(event);
+  // },
+  // getAdminItems(): any[] {
+  //   return [
+  //     {
+  //       label: "Download changes",
+  //       icon: "fa-solid fa-fw fa-cloud-arrow-down",
+  //       command: () => this.downloadChanges()
+  //     }
+  //   ];
+  // },
+  // async downloadChanges() {
+  //   this.$toast.add({ severity: "info", summary: "Preparing download", detail: "Zipping delta files for download...", life: 3000 });
+  //   let blob = await this.$filerService.downloadDeltas();
+  //   const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "deltas.zip";
+  //   link.click();
+  // }
+  // }
 });
 </script>
 
