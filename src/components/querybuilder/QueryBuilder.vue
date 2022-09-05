@@ -1,9 +1,14 @@
 <template>
   <div class="flex align-items-stretch">
     <div class="flex-initial">
-      <QueryTree />
+      <QueryTree @selected="onSelect" />
     </div>
-    <div><ClauseDefinition /></div>
+    <div>
+      <TabView ref="tabview1">
+        <TabPanel header="Edit"><ClauseDefinition :clauseDefinitionData="clauseDefinitionData" /> </TabPanel>
+        <TabPanel header="Display">{{ clauseDefinitionData }} </TabPanel>
+      </TabView>
+    </div>
   </div>
 </template>
 
@@ -14,7 +19,19 @@ import ClauseDefinition from "./ClauseDefinition.vue";
 
 export default defineComponent({
   name: "QueryBuilder",
-  components: { QueryTree, ClauseDefinition }
+  components: { QueryTree, ClauseDefinition },
+  setup(_props, _ctx) {
+    const clauseDefinitionData = ref({});
+
+    function onSelect(nodeContents: any) {
+      clauseDefinitionData.value = nodeContents;
+    }
+
+    return {
+      clauseDefinitionData,
+      onSelect
+    };
+  }
 });
 </script>
 
