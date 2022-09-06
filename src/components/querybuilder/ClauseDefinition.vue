@@ -11,12 +11,11 @@
 import { Helpers } from "im-library";
 import { computed, defineComponent } from "vue";
 import SingleInputTextDefinition from "./definitionComponents/SingleInputTextDefinition.vue";
-import MultipleInputTextDefinition from "./definitionComponents/MultipleInputTextDefinition.vue";
 const { isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 export default defineComponent({
   name: "ClauseDefinition",
-  components: { SingleInputTextDefinition, MultipleInputTextDefinition },
+  components: { SingleInputTextDefinition },
   props: ["clauseDefinitionData"],
   setup(props, _ctx) {
     const hasSelectedObject = computed(() => {

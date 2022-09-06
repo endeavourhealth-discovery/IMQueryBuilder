@@ -5,7 +5,17 @@
     </div>
     <div>
       <TabView ref="tabview1">
-        <TabPanel header="Edit"><ClauseDefinition :clauseDefinitionData="clauseDefinitionData" /> </TabPanel>
+        <TabPanel header="Edit">
+          <Card>
+            <template #content>
+              <ClauseDefinition :clauseDefinitionData="clauseDefinitionDataProp" />
+            </template>
+            <template #footer>
+              <Button icon="pi pi-times" label="Cancel" class="p-button-secondary" @click="cancelChanges" />
+              <Button icon="pi pi-check" label="Save" @click="saveChanges" />
+            </template>
+          </Card>
+        </TabPanel>
         <TabPanel header="Display">{{ clauseDefinitionData }} </TabPanel>
       </TabView>
     </div>
@@ -16,19 +26,34 @@
 import { defineComponent, ref } from "vue";
 import QueryTree from "./QueryTree.vue";
 import ClauseDefinition from "./ClauseDefinition.vue";
+import { Helpers } from "im-library";
+const { isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 export default defineComponent({
   name: "QueryBuilder",
   components: { QueryTree, ClauseDefinition },
   setup(_props, _ctx) {
     const clauseDefinitionData = ref({});
+    const clauseDefinitionDataProp = ref({});
 
     function onSelect(nodeContents: any) {
       clauseDefinitionData.value = nodeContents;
+      clauseDefinitionDataProp.value = Object.assign(isArrayHasLength(nodeContents) ? [] : {}, nodeContents);
+    }
+
+    function cancelChanges() {
+      clauseDefinitionDataProp.value = Object.assign(isArrayHasLength(clauseDefinitionData.value) ? [] : {}, clauseDefinitionData.value);
+    }
+
+    function saveChanges() {
+      clauseDefinitionData.value = Object.assign(isArrayHasLength(clauseDefinitionDataProp.value) ? [] : {}, clauseDefinitionDataProp.value);
     }
 
     return {
       clauseDefinitionData,
+      clauseDefinitionDataProp,
+      saveChanges,
+      cancelChanges,
       onSelect
     };
   }

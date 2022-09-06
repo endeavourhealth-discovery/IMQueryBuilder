@@ -1,30 +1,24 @@
 <template>
-  <Card>
-    <template #content>
-      <div class="p-fluid grid">
-        <div class="field col-12">
-          <span class="p-float-label">
-            <InputText id="property" type="text" v-model="propertyValue.property" />
-            <label for="property">Property</label>
-          </span>
-        </div>
-        <div class="field col-12">
-          <span class="p-float-label">
-            <InputText id="value" type="text" v-model="propertyValue.value" />
-            <label for="value">Value</label>
-          </span>
-        </div>
-      </div>
-    </template>
-    <template #footer>
-      <Button icon="pi pi-times" label="Cancel" class="p-button-secondary" />
-      <Button icon="pi pi-check" label="Save" @click="saveChanges" />
-    </template>
-  </Card>
+  <div class="p-fluid grid">
+    <div class="field col-12">
+      <span class="p-float-label">
+        <InputText id="property" type="text" v-model="propertyValue.property" />
+        <label for="property">Property</label>
+      </span>
+    </div>
+    <div class="field col-12">
+      <span class="p-float-label">
+        <InputText id="value" type="text" v-model="propertyValue.value" />
+        <label for="value">Value</label>
+      </span>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, onMounted, ref, watch } from "vue";
+import { Helpers } from "im-library";
+const { isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 export default defineComponent({
   name: "SingleInputTextDefinition",
@@ -32,24 +26,49 @@ export default defineComponent({
   setup(props, ctx) {
     const propertyValue = ref({ property: "", value: "" });
 
+    onMounted(() => {
+      setPropertyValue();
+    });
+
+    function setPropertyValue() {
+      const key = Object.keys(props.clauseDefinitionData)[0];
+      if (key !== "key") {
+        propertyValue.value.property = key;
+        propertyValue.value.value = props.clauseDefinitionData[key];
+      } else {
+        console.log(props.clauseDefinitionData);
+      }
+    }
+
     watch(
       () => props.clauseDefinitionData,
       (newVal, oldVal) => {
-        const key = Object.keys(props.clauseDefinitionData)[0];
-        propertyValue.value.property = key;
-        propertyValue.value.value = props.clauseDefinitionData[key];
+        setPropertyValue();
       }
     );
 
-    function saveChanges() {
+    function updateProp(newVal: any, oldVal: any) {
       const key = Object.keys(props.clauseDefinitionData)[0];
       delete props.clauseDefinitionData[key];
       props.clauseDefinitionData[propertyValue.value.property] = propertyValue.value.value;
     }
 
+    watch(
+      () => propertyValue.value.property,
+      (newVal, oldVal) => {
+        updateProp(newVal, oldVal);
+      }
+    );
+
+    watch(
+      () => propertyValue.value.value,
+      (newVal, oldVal) => {
+        updateProp(newVal, oldVal);
+      }
+    );
+
     return {
-      propertyValue,
-      saveChanges
+      propertyValue
     };
   }
 });
