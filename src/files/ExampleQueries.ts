@@ -107,4 +107,23 @@ const allNodeShapesQuery = {
   ]
 };
 
+const newQuery = {
+  label: "query",
+  value: [
+    { label: "name", value: "A new query", component: "inputText", number: 1 },
+    { label: "description", value: "A new query built with the query-builder", component: "inputText", number: 1 },
+    {
+      label: "select",
+      component: "dropdown",
+      value: [
+        {
+          label: "property",
+          component: "dropdown",
+          value: [{ label: "label", component: "autocomplete", value: "http://www.w3.org/2000/01/rdf-schema#label" }]
+        }
+      ]
+    }
+  ]
+};
+
 export { allNodeShapesQuery };
