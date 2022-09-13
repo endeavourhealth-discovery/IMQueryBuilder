@@ -1,129 +1,54 @@
-const allNodeShapesQuery = {
+const simpleQueryObject = {
   query: {
-    name: "A new query",
-    description: "A new query built with the query-builder",
-    select: {
-      property: [
-        {
-          name: "label",
-          "@id": "http://www.w3.org/2000/01/rdf-schema#label"
-        }
-      ],
-      match: [
-        {
-          property: [
-            {
-              name: "type",
-              "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-              isConcept: [
-                {
-                  "@id": "http://www.w3.org/ns/shacl#NodeShape"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+    "@id": "urn:uuid:6d517466-813b-46a8-b848-aaf5a4fbdcbf",
+    name: "SMI Population",
+    description: "Adults 18+ with SMI",
+    from: {
+      "@id": "http://endhealth.info/im#Q_RegisteredGMS",
+      name: "Registered with GP for GMS services on the reference date"
     }
   },
-  tree: [
-    {
-      key: "0",
-      label: "query",
-      children: [
-        {
-          key: "0-0",
-          label: "name",
-          data: { name: "A new query" }
-        },
-        {
-          key: "0-1",
-          label: "description",
-          data: { description: "A new query built with the query-builder" }
-        },
-        {
-          key: "0-2",
-          label: "select",
-          children: [
-            {
-              key: "0-2-0",
-              label: "property",
-              children: [
-                {
-                  key: "0-2-0-0",
-                  label: "label",
-                  data: {
-                    name: "label"
-                  }
-                },
-                {
-                  key: "0-2-0-1",
-                  label: "http://www.w3.org/2000/01/rdf-schema#label",
-                  data: {
-                    "@id": "http://www.w3.org/2000/01/rdf-schema#label"
-                  }
-                }
-              ]
-            },
-            {
-              key: "0-2-1",
-              label: "match",
-              children: [
-                {
-                  key: "0-2-1-0",
-                  label: "property",
-                  children: [
-                    {
-                      key: "0-2-1-0-0",
-                      label: "type",
-                      data: { name: "type" }
-                    },
-                    {
-                      key: "0-2-1-0-1",
-                      label: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                      data: { "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" }
-                    },
-                    {
-                      key: "0-2-1-0-2",
-                      label: "isConcept",
-                      children: [
-                        {
-                          key: "0-2-1-0-1-0",
-                          label: "http://www.w3.org/ns/shacl#NodeShape",
-                          data: {
-                            "@id": "http://www.w3.org/ns/shacl#NodeShape"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
+  queryUI: {
+    key: 0,
+    label: "query",
+    type: "org.endeavourhealth.imapi.model.iml.Query",
+    children: [
+      {
+        key: 1,
+        label: "iri",
+        type: "java.lang.String",
+        value: "urn:uuid:6d517466-813b-46a8-b848-aaf5a4fbdcbf"
+      },
+      {
+        key: 2,
+        label: "name",
+        type: "java.lang.String",
+        value: "SMI Population"
+      },
+      {
+        key: 3,
+        label: "description",
+        type: "java.lang.String",
+        value: "Adults 18+ with SMI"
+      },
+      {
+        key: 4,
+        label: "from",
+        type: "org.endeavourhealth.imapi.model.iml.From",
+        children: [
+          {
+            key: 5,
+            label: "Registered with GP for GMS services on the reference date",
+            type: "org.endeavourhealth.imapi.model.tripletree.TTIriRef",
+            value: {
+              "@id": "http://endhealth.info/im#Q_RegisteredGMS",
+              name: "Registered with GP for GMS services on the reference date"
             }
-          ]
-        }
-      ]
-    }
-  ]
+          }
+        ]
+      }
+    ]
+  }
 };
 
-const newQuery = {
-  label: "query",
-  value: [
-    { label: "name", value: "A new query", component: "inputText", number: 1 },
-    { label: "description", value: "A new query built with the query-builder", component: "inputText", number: 1 },
-    {
-      label: "select",
-      component: "dropdown",
-      value: [
-        {
-          label: "property",
-          component: "dropdown",
-          value: [{ label: "label", component: "autocomplete", value: "http://www.w3.org/2000/01/rdf-schema#label" }]
-        }
-      ]
-    }
-  ]
-};
-
-export { allNodeShapesQuery };
+export { simpleQueryObject };
