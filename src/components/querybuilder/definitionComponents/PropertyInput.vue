@@ -13,7 +13,7 @@
       <Chip :label="property.label" class="mb-2" removable @remove="removeProperty" />
     </div>
     <div v-if="isTextInput" class="field col-8">
-      <InputText type="text" v-model="property.value.name" />
+      <InputText type="text" v-model="property.value" />
     </div>
     <div v-else-if="isListOfTTIriRefs" class="field col-8">
       <EntityAutocomplete :property="property" :parentType="parentType" />
@@ -67,7 +67,8 @@ export default defineComponent({
     });
 
     onMounted(async () => {
-      if (typeof props.parentType === "string") classProperties.value = await classService.getClassProperties(props.parentType);
+      const isNotNestedProperty = typeof props.parentType === "string";
+      if (isNotNestedProperty) classProperties.value = await classService.getClassProperties(props.parentType);
     });
 
     function onSelect(event: any) {

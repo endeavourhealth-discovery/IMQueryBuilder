@@ -40,7 +40,8 @@ export default defineComponent({
         key: Math.floor(Math.random() * 9999999999999999),
         label: selected.value.name,
         type: "org.endeavourhealth.imapi.model.tripletree.TTIriRef",
-        value: { "@id": selected.value["@id"], name: selected.value.name }
+        value: { "@id": selected.value["@id"], name: selected.value.name },
+        selectable: false
       };
       props.property.children?.push(iriRef);
     }

@@ -22,11 +22,11 @@
             </template>
           </Card>
         </TabPanel>
-        <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
+        <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" /></TabPanel>
       </TabView>
     </div>
   </div>
-  <VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" />
+  <VueJsonPretty class="json" :path="'res'" :data="fullQuery" />
 </template>
 
 <script lang="ts">
