@@ -13,13 +13,12 @@
 </template>
 
 <script lang="ts">
-import { EntityReferenceNode, GenericType, Namespace, QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import { computed, defineComponent, onMounted, PropType, ref } from "vue";
+import { GenericType, QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
+import { defineComponent, PropType, ref } from "vue";
 import { Services, Enums, Helpers, Config } from "im-library";
 import axios from "axios";
 const { EntityService } = Services;
-const { DataTypeCheckers } = Helpers;
-const { isObject, isArrayHasLength } = DataTypeCheckers;
+const { isObject, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 export default defineComponent({
   name: "EntityAutocomplete",

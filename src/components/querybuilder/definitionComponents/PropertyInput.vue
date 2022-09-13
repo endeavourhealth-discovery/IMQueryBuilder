@@ -1,18 +1,25 @@
 <template>
   <div class="formgrid grid">
     <Dropdown
+      v-if="!isPropertySet"
       class="field col-3"
       v-model="propertyName"
       :options="classProperties"
-      optionLabel="name"
       placeholder="Select property to add"
+      optionLabel="name"
       @change="onSelect"
     />
+    <div v-else>
+      <Chip :label="property.label" class="mb-2" removable @remove="removeProperty" />
+    </div>
     <div v-if="isTextInput" class="field col-8">
-      <InputText type="text" v-model="property.value" />
+      <InputText type="text" v-model="property.value.name" />
     </div>
     <div v-else-if="isListOfTTIriRefs" class="field col-8">
       <EntityAutocomplete :property="property" :parentType="parentType" />
+    </div>
+    <div v-else-if="!property.value && property.label" class="field col-8">
+      <Button icon="pi pi-pencil" label="Add value" @click="addValue" />
     </div>
   </div>
 </template>
@@ -22,8 +29,7 @@ import axios from "axios";
 import { Services, Helpers } from "im-library";
 const { ClassService } = Services;
 import { Field, GenericType } from "im-library/dist/types/interfaces/Interfaces";
-const { DataTypeCheckers } = Helpers;
-const { isObjectHasKeys } = DataTypeCheckers;
+const { isObjectHasKeys } = Helpers.DataTypeCheckers;
 
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
 import { QueryObject } from "im-library/dist/types/interfaces/Interfaces";
@@ -36,10 +42,17 @@ export default defineComponent({
     property: { type: Object as PropType<QueryObject>, required: true },
     parentType: { type: String || (Object as PropType<GenericType>), required: true }
   },
-  setup(props, _ctx) {
-    const propertyName = ref<string>(props.property.label);
+  emits: {
+    changeCurrentObject: (_payload: QueryObject) => true,
+    removeProperty: (_payload: string) => true
+  },
+  setup(props, ctx) {
+    const propertyName = ref<string>();
     const classProperties = ref<Field[]>([]);
     const classService = new ClassService(axios);
+    const isPropertySet = computed(() => {
+      return isObjectHasKeys(props.property, ["label"]);
+    });
 
     const isTextInput = computed(() => {
       return props.property.type === "java.lang.String";
@@ -63,11 +76,22 @@ export default defineComponent({
       props.property.type = field.genericType;
     }
 
+    function addValue() {
+      ctx.emit("changeCurrentObject", props.property);
+    }
+
+    function removeProperty() {
+      if (props.property.label) ctx.emit("removeProperty", props.property.label);
+    }
+
     return {
+      isPropertySet,
       propertyName,
       classProperties,
       isTextInput,
       isListOfTTIriRefs,
+      addValue,
+      removeProperty,
       onSelect
     };
   }

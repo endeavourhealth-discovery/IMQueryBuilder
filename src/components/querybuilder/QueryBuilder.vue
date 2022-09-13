@@ -7,7 +7,12 @@
           <Card>
             <template #content>
               <div v-for="property in currentQueryObject.children" :key="property.key">
-                <PropertyInput :property="property" :parentType="currentQueryObject.type" />
+                <PropertyInput
+                  :property="property"
+                  :parentType="currentQueryObject.type"
+                  @changeCurrentObject="updateCurrentObject"
+                  @removeProperty="deleteProperty"
+                />
               </div>
             </template>
             <template #footer>
@@ -25,12 +30,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from "vue";
-import { allNodeShapesQuery } from "./../../files/ExampleQueries";
+import { defineComponent, ref } from "vue";
 import QueryTree from "./QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
-import { Helpers, Services } from "im-library";
+import { Helpers } from "im-library";
 import { QueryObject } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "./definitionComponents/PropertyInput.vue";
 const { isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
@@ -71,10 +75,20 @@ export default defineComponent({
       currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999) } as QueryObject);
     }
 
+    function updateCurrentObject(newQueryObject: QueryObject) {
+      currentQueryObject.value = newQueryObject;
+    }
+
+    function deleteProperty(propertyName: string) {
+      currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.label !== propertyName);
+    }
+
     return {
       fullQuery,
       currentQueryObject,
       queryNodes,
+      deleteProperty,
+      updateCurrentObject,
       saveChanges,
       addProperty,
       cancelChanges,
