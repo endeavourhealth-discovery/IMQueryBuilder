@@ -14,11 +14,11 @@
 
 <script lang="ts">
 import { GenericType, QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import { defineComponent, PropType, ref } from "vue";
+import { defineComponent, onMounted, PropType, ref } from "vue";
 import { Services, Enums, Helpers, Config } from "im-library";
 import axios from "axios";
 const { EntityService } = Services;
-const { isObject, isArrayHasLength } = Helpers.DataTypeCheckers;
+const { isObject, isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 export default defineComponent({
   name: "EntityAutocomplete",
@@ -30,7 +30,15 @@ export default defineComponent({
     const suggestions = ref();
     const entityService = new EntityService(axios);
     const abortController = ref(new AbortController());
-    const selectedIriRefs = ref([]);
+    const selectedIriRefs = ref<TTIriRef[]>([]);
+
+    onMounted(() => {
+      if (isArrayHasLength(props.property.children)) {
+        selectedIriRefs.value = props.property.children?.map(selected => selected.value) as TTIriRef[];
+      } else if (isObjectHasKeys(props.property, ["value"])) {
+        selectedIriRefs.value.push(props.property.value);
+      }
+    });
 
     function onSelect(selected: { value: TTIriRef }) {
       if (!isArrayHasLength(props.property.children)) {

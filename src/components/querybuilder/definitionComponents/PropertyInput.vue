@@ -60,26 +60,33 @@ export default defineComponent({
 
     const isListOfTTIriRefs = computed(() => {
       return (
-        isObjectHasKeys(props.property.type, ["rawType"]) &&
-        (props.property.type as GenericType).rawType === "java.util.List" &&
+        isList &&
+        isObjectHasKeys(props.property.type, ["actualTypeArguments"]) &&
         (props.property.type as GenericType).actualTypeArguments.includes("org.endeavourhealth.imapi.model.tripletree.TTIriRef")
       );
     });
 
     onMounted(async () => {
-      const isNotNestedProperty = typeof props.parentType === "string";
-      if (isNotNestedProperty) classProperties.value = await classService.getClassProperties(props.parentType);
+      const type = isObjectHasKeys(props.parentType, ["actualTypeArguments"])
+        ? (props.parentType as unknown as GenericType).actualTypeArguments[0]
+        : props.parentType;
+      classProperties.value = await classService.getClassProperties(type);
     });
 
     function onSelect(event: any) {
       const field = event.value as Field;
       props.property.label = field.name;
       props.property.type = field.genericType;
+      if (isTextInput) props.property.selectable = false;
     }
 
     function addValue() {
       ctx.emit("changeCurrentObject", props.property);
     }
+
+    const isList = computed(() => {
+      return isObjectHasKeys(props.property.type, ["rawType"]) && (props.property.type as GenericType).rawType === "java.util.List";
+    });
 
     function removeProperty() {
       if (props.property.label) ctx.emit("removeProperty", props.property.label);
@@ -91,6 +98,7 @@ export default defineComponent({
       classProperties,
       isTextInput,
       isListOfTTIriRefs,
+      isList,
       addValue,
       removeProperty,
       onSelect
