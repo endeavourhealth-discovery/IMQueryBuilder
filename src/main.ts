@@ -77,7 +77,7 @@ import Breadcrumb from "primevue/breadcrumb";
 import Sidebar from "primevue/sidebar";
 import Chips from "primevue/chips";
 import DataView from "primevue/dataview";
-1;
+import Inplace from "primevue/inplace";
 import Chip from "primevue/chip";
 
 import { Amplify, Auth } from "aws-amplify";
@@ -166,6 +166,7 @@ const app = createApp(App)
   .component("Chips", Chips)
   .component("DataView", DataView)
   .component("Chip", Chip)
+  .component("Inplace", Inplace)
   .component("Tag", Tag);
 
 // register custom $properties

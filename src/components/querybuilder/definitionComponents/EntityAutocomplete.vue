@@ -23,8 +23,7 @@ const { isObject, isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers
 export default defineComponent({
   name: "EntityAutocomplete",
   props: {
-    property: { type: Object as PropType<QueryObject>, required: true },
-    parentType: { type: String || (Object as PropType<GenericType>), required: true }
+    property: { type: Object as PropType<QueryObject>, required: true }
   },
   setup(props, _ctx) {
     const suggestions = ref();
@@ -47,7 +46,7 @@ export default defineComponent({
       const iriRef = {
         key: Math.floor(Math.random() * 9999999999999999),
         label: selected.value.name,
-        type: "org.endeavourhealth.imapi.model.tripletree.TTIriRef",
+        type: { firstType: "org.endeavourhealth.imapi.model.tripletree.TTIriRef" },
         value: { "@id": selected.value["@id"], name: selected.value.name },
         selectable: false
       };

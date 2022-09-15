@@ -46,7 +46,7 @@ export default defineComponent({
     const initNode = {
       key: 0,
       label: "query",
-      type: "org.endeavourhealth.imapi.model.iml.Query",
+      type: { firstType: "org.endeavourhealth.imapi.model.iml.Query" },
       value: "",
       children: []
     } as QueryObject;
