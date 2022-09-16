@@ -1,8 +1,7 @@
 <template>
-  <div class="formgrid grid">
+  <div class="property-value-container">
     <Dropdown
       v-if="!isPropertySet"
-      class="field col-3"
       v-model="propertyName"
       :options="classProperties"
       placeholder="Select property to add"
@@ -12,23 +11,21 @@
     <div v-else>
       <Chip :label="property.label" class="mb-2" removable @remove="removeProperty" />
     </div>
-    <div class="field col-8">
-      <Inplace :closable="true">
-        <template #display>
-          <span v-if="isPropertySet">{{ property.value || property.children?.map(child => child.label) || "Click to edit" }}</span>
-        </template>
-        <template #content>
-          <Dropdown v-if="isStatus" v-model="property.value" :options="options?.status" optionLabel="name" placeholder="Select status" />
-          <Dropdown v-else-if="isScheme" v-model="property.value" :options="options?.scheme" optionLabel="name" placeholder="Select scheme" />
-          <MultiSelect v-else-if="isType" v-model="property.value" :options="options?.type" optionLabel="name" placeholder="Select type" />
-          <Chips v-else-if="isListOfTextInput" type="text" v-model="property.value" />
-          <InputText v-else-if="isTextInput" type="text" v-model="property.value" />
-          <Checkbox v-else-if="isBoolean" inputId="binary" v-model="property.value" :binary="true" />
-          <EntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
-          <Button v-else-if="!property.value && property.label" icon="pi pi-pencil" label="Edit value" @click="addValue" />
-        </template>
-      </Inplace>
-    </div>
+    <Inplace :closable="true">
+      <template #display>
+        <span v-if="isPropertySet">{{ property.value || property.children?.map(child => child.label) || "Click to edit" }}</span>
+      </template>
+      <template #content>
+        <Dropdown v-if="isStatus" v-model="property.value" :options="options?.status" optionLabel="name" placeholder="Select status" />
+        <Dropdown v-else-if="isScheme" v-model="property.value" :options="options?.scheme" optionLabel="name" placeholder="Select scheme" />
+        <MultiSelect v-else-if="isType" v-model="property.value" :options="options?.type" optionLabel="name" placeholder="Select type" />
+        <Chips v-else-if="isListOfTextInput" type="text" v-model="property.value" />
+        <InputText v-else-if="isTextInput" type="text" v-model="property.value" />
+        <Checkbox v-else-if="isBoolean" inputId="binary" v-model="property.value" :binary="true" />
+        <EntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
+        <Button v-else-if="!property.value && property.label" icon="pi pi-pencil" label="Edit value" @click="addValue" />
+      </template>
+    </Inplace>
   </div>
 </template>
 
@@ -155,4 +152,11 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.property-value-container {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: baseline;
+  justify-content: center;
+}
+</style>

@@ -1,33 +1,29 @@
 <template>
-  <div class="formgrid grid">
-    <div class="col-3"><QueryTree :queryNodes="queryNodes" @selected="onSelect" /></div>
-    <div class="col">
-      <TabView ref="tabview1">
-        <TabPanel header="Edit">
-          <Card>
-            <template #content>
-              <div v-for="property in currentQueryObject.children" :key="property.key">
-                <PropertyInput
-                  :property="property"
-                  :parentType="currentQueryObject.type"
-                  :options="options"
-                  @changeCurrentObject="updateCurrentObject"
-                  @removeProperty="deleteProperty"
-                />
-              </div>
-            </template>
-            <template #footer>
-              <Button icon="pi pi-times" label="Cancel" class="p-button-secondary" @click="cancelChanges" />
-              <Button icon="pi pi-plus" label="Add" class="p-button-success" @click="addProperty" />
-              <Button icon="pi pi-check" label="Save" @click="saveChanges" />
-            </template>
-          </Card>
-        </TabPanel>
-        <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" /></TabPanel>
-      </TabView>
-    </div>
+  <div class="query-builder-main-container">
+    <QueryTree :queryNodes="queryNodes" @selected="onSelect" />
+    <TabView class="tab-view-container" ref="tabview1">
+      <TabPanel header="Edit">
+        <div class="tab-content-container">
+          <div v-for="property in currentQueryObject.children" :key="property.key">
+            <PropertyInput
+              :property="property"
+              :parentType="currentQueryObject.type"
+              :options="options"
+              @changeCurrentObject="updateCurrentObject"
+              @removeProperty="deleteProperty"
+            />
+          </div>
+          <div class="footer-buttons">
+            <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" @click="cancelChanges" />
+            <Button icon="pi pi-plus" label="Add" class="p-button-success one-rem-margin" @click="addProperty" />
+            <Button icon="pi pi-check" label="Save" class="one-rem-margin" @click="saveChanges" />
+          </div>
+        </div>
+      </TabPanel>
+      <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" /></TabPanel>
+      <TabPanel class="tab-panel" header="Full query"><VueJsonPretty  class="json" :path="'res'" :data="fullQuery" /></TabPanel>
+    </TabView>
   </div>
-  <VueJsonPretty class="json" :path="'res'" :data="fullQuery" />
 </template>
 
 <script lang="ts">
@@ -126,17 +122,45 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.query-builder-container {
+.query-builder-main-container {
+  display: flex;
+  flex-flow: row wrap;
   height: 100%;
 }
-.full-height {
+
+.tab-content-container {
+  display: flex;
+  flex-flow: column;
+  justify-content: end;
+}
+
+.footer-buttons {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: end;
+}
+
+.tab-view-container {
+  flex: 1 0;
   height: 100%;
 }
+
+.one-rem-margin {
+  margin-right: 0.1rem;
+}
+
 .p-tree {
   height: 100%;
 }
 .p-card {
   box-shadow: none;
+}
+
+.tab-panel{
+  height: 100%;
+}
+
+.json {
   height: 100%;
 }
 </style>

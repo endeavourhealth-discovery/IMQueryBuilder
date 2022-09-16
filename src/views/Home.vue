@@ -1,8 +1,5 @@
 <template>
-  <Card>
-    <template #title>Title</template>
-    <template #content><QueryBuilder /></template>
-  </Card>
+  <QueryBuilder class="query-builder-component" />
 </template>
 
 <script lang="ts">
@@ -15,8 +12,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.p-card {
+.query-builder-component {
   height: 100%;
-  width: 100%;
 }
 </style>
