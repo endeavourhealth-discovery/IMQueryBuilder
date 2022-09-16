@@ -10,6 +10,7 @@
                 <PropertyInput
                   :property="property"
                   :parentType="currentQueryObject.type"
+                  :options="options"
                   @changeCurrentObject="updateCurrentObject"
                   @removeProperty="deleteProperty"
                 />
@@ -30,19 +31,44 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 import QueryTree from "./QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
-import { Helpers } from "im-library";
-import { QueryObject } from "im-library/dist/types/interfaces/Interfaces";
+import { Helpers, Vocabulary, Services } from "im-library";
+import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "./definitionComponents/PropertyInput.vue";
-const { isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
-
+import axios from "axios";
+const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
+const { IM, RDFS } = Vocabulary;
+const { EntityService } = Services;
 export default defineComponent({
   name: "QueryBuilder",
   components: { QueryTree, VueJsonPretty, PropertyInput },
   setup(_props, _ctx) {
+    const entityService = new EntityService(axios);
+    const abortController = ref(new AbortController());
+    const options = ref({ status: [] as TTIriRef[], scheme: [] as TTIriRef[], type: [] as TTIriRef[] });
+    onMounted(async () => {
+      options.value.status = await searchByIsA([IM.STATUS]);
+      options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
+      options.value.type = await searchByIsA([RDFS.CLASS]);
+    });
+
+    async function searchByIsA(isA: string[]) {
+      const searchRequest = {} as SearchRequest;
+      searchRequest.isA = isA;
+      if (!isObject(abortController.value)) {
+        abortController.value.abort();
+      }
+
+      abortController.value = new AbortController();
+      const results = await entityService.advancedSearch(searchRequest, abortController.value);
+      return results.map(summary => {
+        return { "@id": summary.iri, name: summary.name };
+      });
+    }
+
     const initNode = {
       key: 0,
       label: "query",
@@ -72,7 +98,7 @@ export default defineComponent({
       if (!isArrayHasLength(currentQueryObject.value.children)) {
         currentQueryObject.value.children = [];
       }
-      currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999) } as QueryObject);
+      currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999), selectable: false } as QueryObject);
     }
 
     function updateCurrentObject(newQueryObject: QueryObject) {
@@ -87,6 +113,7 @@ export default defineComponent({
       fullQuery,
       currentQueryObject,
       queryNodes,
+      options,
       deleteProperty,
       updateCurrentObject,
       saveChanges,

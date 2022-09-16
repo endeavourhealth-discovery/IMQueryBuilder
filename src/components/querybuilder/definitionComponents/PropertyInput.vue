@@ -15,24 +15,19 @@
     <div class="field col-8">
       <Inplace :closable="true">
         <template #display>
-          {{ property.value || property.children?.map(child => child.label) || "Click to edit" }}
+          <span v-if="isPropertySet">{{ property.value || property.children?.map(child => child.label) || "Click to edit" }}</span>
         </template>
         <template #content>
-          <InputText v-if="isTextInput" type="text" v-model="property.value" />
+          <Dropdown v-if="isStatus" v-model="property.value" :options="options?.status" optionLabel="name" placeholder="Select status" />
+          <Dropdown v-else-if="isScheme" v-model="property.value" :options="options?.scheme" optionLabel="name" placeholder="Select scheme" />
+          <MultiSelect v-else-if="isType" v-model="property.value" :options="options?.type" optionLabel="name" placeholder="Select type" />
+          <Chips v-else-if="isListOfTextInput" type="text" v-model="property.value" />
+          <InputText v-else-if="isTextInput" type="text" v-model="property.value" />
+          <Checkbox v-else-if="isBoolean" inputId="binary" v-model="property.value" :binary="true" />
           <EntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
           <Button v-else-if="!property.value && property.label" icon="pi pi-pencil" label="Edit value" @click="addValue" />
         </template>
       </Inplace>
-
-      <!-- <div v-if="isTextInput" class="field col-8">
-            <InputText type="text" v-model="property.value" />
-          </div>
-          <div v-else-if="isListOfIriRefs || isIriRef" class="field col-8">
-            <EntityAutocomplete :property="property" :parentType="parentType" />
-          </div>
-          <div v-else-if="!property.value && property.label" class="field col-8">
-            <Button icon="pi pi-pencil" label="Edit value" @click="addValue" />
-          </div> -->
     </div>
   </div>
 </template>
@@ -45,7 +40,7 @@ import { Field, GenericType, FieldUI, SimplifiedType } from "im-library/dist/typ
 const { isObjectHasKeys } = Helpers.DataTypeCheckers;
 
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
-import { QueryObject } from "im-library/dist/types/interfaces/Interfaces";
+import { QueryObject, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import EntityAutocomplete from "./EntityAutocomplete.vue";
 
 export default defineComponent({
@@ -53,7 +48,8 @@ export default defineComponent({
   components: { EntityAutocomplete },
   props: {
     property: { type: Object as PropType<QueryObject>, required: true },
-    parentType: { type: Object as PropType<SimplifiedType>, required: true }
+    parentType: { type: Object as PropType<SimplifiedType>, required: true },
+    options: { type: Object as PropType<{ status: TTIriRef[]; scheme: TTIriRef[]; type: TTIriRef[] }> }
   },
   emits: {
     changeCurrentObject: (_payload: QueryObject) => true,
@@ -67,12 +63,16 @@ export default defineComponent({
       return isObjectHasKeys(props.property, ["label"]);
     });
 
-    const isList = computed(() => {
-      return isOfClassType(props.property, "java.util.List");
-    });
-
     const isTextInput = computed(() => {
       return isOfClassType(props.property, "java.lang.String");
+    });
+
+    const isListOfTextInput = computed(() => {
+      return isOfClassType(props.property, "java.lang.String", "java.util.List");
+    });
+
+    const isBoolean = computed(() => {
+      return isOfClassType(props.property, "boolean");
     });
 
     const isComplexType = computed(() => {
@@ -85,6 +85,18 @@ export default defineComponent({
 
     const isListOfIriRefs = computed(() => {
       return isOfClassType(props.property, "org.endeavourhealth.imapi.model.tripletree.TTIriRef", "java.util.List");
+    });
+
+    const isStatus = computed(() => {
+      return props.property.label === "status";
+    });
+
+    const isScheme = computed(() => {
+      return props.property.label === "scheme";
+    });
+
+    const isType = computed(() => {
+      return props.property.label === "type";
     });
 
     function isOfClassType(queryOjbect: QueryObject, firstType: string, secondType?: string) {
@@ -112,7 +124,6 @@ export default defineComponent({
       const field = event.value as FieldUI;
       props.property.label = field.name;
       props.property.type = field.simplifiedType;
-      props.property.selectable = false;
       if (isComplexType.value && !isListOfIriRefs.value) props.property.selectable = true;
     }
 
@@ -131,7 +142,11 @@ export default defineComponent({
       isTextInput,
       isListOfIriRefs,
       isIriRef,
-      isList,
+      isListOfTextInput,
+      isStatus,
+      isScheme,
+      isType,
+      isBoolean,
       addValue,
       removeProperty,
       onSelect
