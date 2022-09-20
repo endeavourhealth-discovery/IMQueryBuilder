@@ -73,7 +73,9 @@ export default defineComponent({
     });
 
     const isComplexType = computed(() => {
-      return !!props.property.type.secondType;
+      const simpleTypes = ["java.lang.String", "boolean", "org.endeavourhealth.imapi.model.tripletree.TTIriRef"];
+      const isSimple = isOfClassTypes(props.property, simpleTypes);
+      return !isSimple || !!props.property.type.secondType;
     });
 
     const isIriRef = computed(() => {
@@ -85,21 +87,34 @@ export default defineComponent({
     });
 
     const isStatus = computed(() => {
-      return props.property.label === "status";
+      return props.property.label === "status" && isIriRef;
     });
 
     const isScheme = computed(() => {
-      return props.property.label === "scheme";
+      return props.property.label === "scheme" && isIriRef;
     });
 
     const isType = computed(() => {
-      return props.property.label === "type";
+      return props.property.label === "type" && isIriRef;
     });
 
     function isOfClassType(queryOjbect: QueryObject, firstType: string, secondType?: string) {
       const firstTypeMatch = queryOjbect.type.firstType === firstType;
       if (secondType) return firstTypeMatch && queryOjbect.type.secondType === secondType;
       return firstTypeMatch;
+    }
+
+    function isOfClassTypes(queryOjbect: QueryObject, firstTypes: string[]) {
+      let isOfClassTypes = false;
+      let i = 0;
+      while (!isOfClassTypes && i < firstTypes.length) {
+        if (isOfClassType(queryOjbect, firstTypes[i])) {
+          isOfClassTypes = true;
+        }
+        i++;
+      }
+
+      return isOfClassTypes;
     }
 
     onMounted(async () => {
