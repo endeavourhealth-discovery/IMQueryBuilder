@@ -4,14 +4,16 @@
     <TabView class="tab-view-container" ref="tabview1">
       <TabPanel header="Edit">
         <div class="tab-content-container">
-          <div v-for="property in currentQueryObject.children" :key="property.key">
-            <PropertyInput
-              :property="property"
-              :parentType="currentQueryObject.type"
-              :options="options"
-              @changeCurrentObject="updateCurrentObject"
-              @removeProperty="deleteProperty"
-            />
+          <div class="property-container">
+            <div class="property-component" v-for="property in currentQueryObject.children" :key="property.key">
+              <PropertyInput
+                :property="property"
+                :parentType="currentQueryObject.type"
+                :options="options"
+                @changeCurrentObject="updateCurrentObject"
+                @removeProperty="deleteProperty"
+              />
+            </div>
           </div>
           <div class="footer-buttons">
             <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" @click="cancelChanges" />
@@ -72,12 +74,7 @@ export default defineComponent({
         firstType: "org.endeavourhealth.imapi.model.iml.Query"
       },
       value: "",
-      children: [
-        {
-          key: 7382828547951032,
-          selectable: false
-        }
-      ]
+      children: []
     } as QueryObject;
     const fullQuery = ref<QueryObject>(initNode);
     const currentQueryObject = ref<QueryObject>(initNode);
@@ -136,10 +133,15 @@ export default defineComponent({
 }
 
 .tab-content-container {
+  padding: 1rem;
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-between;
   height: calc(100vh - 8.7rem);
+}
+
+.property-component {
+  padding: 0.5rem;
 }
 
 .footer-buttons {
@@ -160,7 +162,10 @@ export default defineComponent({
 .p-tree {
   height: 100%;
 }
+
 .p-card {
+  padding-left: 1rem;
+  padding-right: 1rem;
   box-shadow: none;
 }
 
@@ -169,6 +174,7 @@ export default defineComponent({
 }
 
 .json {
+  overflow-y: auto;
   height: calc(100vh - 8.7rem);
 }
 </style>
