@@ -21,7 +21,7 @@
         </div>
       </TabPanel>
       <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" /></TabPanel>
-      <TabPanel class="tab-panel" header="Full query"><VueJsonPretty  class="json" :path="'res'" :data="fullQuery" /></TabPanel>
+      <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
 </template>
@@ -68,9 +68,16 @@ export default defineComponent({
     const initNode = {
       key: 0,
       label: "query",
-      type: { firstType: "org.endeavourhealth.imapi.model.iml.Query" },
+      type: {
+        firstType: "org.endeavourhealth.imapi.model.iml.Query"
+      },
       value: "",
-      children: []
+      children: [
+        {
+          key: 7382828547951032,
+          selectable: false
+        }
+      ]
     } as QueryObject;
     const fullQuery = ref<QueryObject>(initNode);
     const currentQueryObject = ref<QueryObject>(initNode);
@@ -124,14 +131,15 @@ export default defineComponent({
 <style scoped>
 .query-builder-main-container {
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: row nowrap;
   height: 100%;
 }
 
 .tab-content-container {
   display: flex;
-  flex-flow: column;
-  justify-content: end;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  height: calc(100vh - 8.7rem);
 }
 
 .footer-buttons {
@@ -156,11 +164,11 @@ export default defineComponent({
   box-shadow: none;
 }
 
-.tab-panel{
+.tab-panel {
   height: 100%;
 }
 
 .json {
-  height: 100%;
+  height: calc(100vh - 8.7rem);
 }
 </style>
