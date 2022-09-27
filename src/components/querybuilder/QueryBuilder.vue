@@ -22,7 +22,8 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel header="Display"><VueJsonPretty class="json" :path="'res'" :data="currentQueryObject" /></TabPanel>
+      <TabPanel class="tab-panel" header="Display"><QueryDisplay :query="PainInLowerLimbORChestPainMinus.query" /> </TabPanel>
+      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="PainInLowerLimbORChestPainMinus.query" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
@@ -36,17 +37,21 @@ import "vue-json-pretty/lib/styles.css";
 import { Helpers, Vocabulary, Services } from "im-library";
 import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "./definitionComponents/PropertyInput.vue";
+import QueryDisplay from "./QueryDisplay.vue";
 import axios from "axios";
+import { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus } from "../../tests/testData/ExampleQueries";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS } = Vocabulary;
-const { EntityService } = Services;
+const { EntityService, QueryService } = Services;
 export default defineComponent({
   name: "QueryBuilder",
-  components: { QueryTree, VueJsonPretty, PropertyInput },
+  components: { QueryTree, VueJsonPretty, PropertyInput, QueryDisplay },
   setup(_props, _ctx) {
+    const queryService = new QueryService(axios);
     const entityService = new EntityService(axios);
     const abortController = ref(new AbortController());
     const options = ref({ status: [] as TTIriRef[], scheme: [] as TTIriRef[], type: [] as TTIriRef[] });
+
     onMounted(async () => {
       options.value.status = await searchByIsA([IM.STATUS]);
       options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
@@ -110,6 +115,8 @@ export default defineComponent({
     }
 
     return {
+      AsthmaSubTypesCore,
+      PainInLowerLimbORChestPainMinus,
       fullQuery,
       currentQueryObject,
       queryNodes,
