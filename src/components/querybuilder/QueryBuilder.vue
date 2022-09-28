@@ -22,7 +22,7 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel class="tab-panel" header="Display"><QueryDisplay :query="PainInLowerLimbORChestPainMinus.query" /> </TabPanel>
+      <TabPanel  header="Display"><QueryDisplay class="tab-panel" :query="PainInLowerLimbORChestPainMinus.query" /> </TabPanel>
       <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="PainInLowerLimbORChestPainMinus.query" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
