@@ -2,54 +2,19 @@
   <Splitter class="mb-5">
     <SplitterPanel class="flex justify-content-center">
       <Tree :value="queryDisplay" class="tree-container">
-        <template #default="{ node }">
-          <Panel :header="node.label" :toggleable="false" :collapsed="true">
-            <template #header> {{ node.label }} </template>
-          </Panel>
-        </template>
-
-        <template #simpleWhere="{ node }">
-          <Panel toggleable collapsed>
-            <template #header> where </template>
-            {{ node.value.property.name }} -> {{ node.value.is.name }}
-          </Panel>
-        </template>
-
-        <template #string="{ node }">
-          <Panel collapsed>
-            <template #header> {{ node.value }} </template>
-          </Panel>
-        </template>
-
-        <template #iri="{ node }">
-          <Panel collapsed>
-            <template #header> {{ node.label }} <IMViewerLink :iri="node.value" /> </template>
-          </Panel>
-        </template>
-
-        <template #boolean="{ node }">
-          <Panel collapsed>
-            <template #header> {{ node.label }} </template>
-          </Panel>
-        </template>
-
+        <template #default="{ node }">{{ node.label }}</template>
+        <template #simpleWhere="{ node }"> {{ node.value.property.name }} -> {{ node.value.is.name }} </template>
+        <template #string="{ node }">{{ node.value }}</template>
+        <template #iri="{ node }"> {{ node.label }} <IMViewerLink :iri="node.value" /></template>
+        <template #boolean="{ node }">{{ node.label }}</template>
         <template #from="{ node }">
-          <Panel :collapsed="true">
-            <template #header>
-              <IMViewerLink :iri="node.value['@id']" :label="node.value.includeSubtypes ? node.label + ' including subtypes' : node.label" />
-            </template>
-          </Panel>
+          <IMViewerLink :iri="node.value['@id']" :label="node.value.includeSubtypes ? node.label + ' including subtypes' : node.label" />
         </template>
 
         <template #simpleOr="{ node }">
-          <Panel toggleable :collapsed="true">
-            <template #header>
-              {{ node.label }}
-            </template>
-            <div v-for="(from, index) in node.value" :key="index">
-              <IMViewerLink :iri="from['@id']" :label="from.includeSubtypes ? from.label + ' including subtypes' : from.label" />
-            </div>
-          </Panel>
+          <div v-for="(from, index) in node.value" :key="index">
+            <IMViewerLink :iri="from['@id']" :label="from.includeSubtypes ? from.label + ' including subtypes' : from.label" />
+          </div>
         </template>
       </Tree>
     </SplitterPanel>
