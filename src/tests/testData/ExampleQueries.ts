@@ -23,6 +23,14 @@ const AsthmaSubTypesCore = {
   }
 };
 
+const Aged70to74 = {
+  "@id": "urn:uuid:da496f54-dca5-4df7-8ffc-98c671d054b9",
+  name: "04a Aged 70-74",
+  description: "All those 70 years of age and over",
+  from: [{ "@id": "http://endhealth.info/im#Q_RegisteredGMS", name: "Registered with GP for GMS services on the reference date", isSet: true }],
+  where: { and: [{ from: [{ "@id": "urn:uuid:e0dadef9-b429-48f7-b69f-faa39d103673", name: "Aged 70-74", isSet: true }] }] }
+};
+
 const PainInLowerLimbORChestPainMinus = {
   query: {
     name: "Pain in lower limb OR Chest pain minus (Chest wall pain or chest pain with sudden onset",
@@ -80,4 +88,4 @@ const PainInLowerLimbORChestPainMinus = {
     activeOnly: true
   }
 };
-export { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus };
+export { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus, Aged70to74 };

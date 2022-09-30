@@ -30,23 +30,28 @@ export function buildQueryDisplay(label: string, type?: any, value?: any, select
 function buildRecursively(queryAPI: any, queryUI: QueryDisplay) {
   if (queryAPI !== null) {
     Object.keys(queryAPI).forEach(key => {
-      console.log(key, typeof queryAPI[key]);
+      if (isIncluded(key)) {
+        if (isSimpleWhere(key, queryAPI[key])) {
+          addSimpleWhere(queryAPI, key, queryUI);
+        }
 
-      if (isSimpleWhere(key, queryAPI[key])) {
-        addSimpleWhere(queryAPI, key, queryUI);
-      }
-
-      if ("from" === key) {
-        addFrom(queryAPI, key, queryUI);
-      } else if (isPrimitiveType(queryAPI[key])) {
-        addPrimitiveType(queryAPI, key, queryUI);
-      } else if (isArrayHasLength(queryAPI[key])) {
-        addArray(queryAPI, key, queryUI);
-      } else if (isObject(queryAPI[key])) {
-        addObject(queryAPI, key, queryUI);
+        if ("from" === key) {
+          addFrom(queryAPI, key, queryUI);
+        } else if (isPrimitiveType(queryAPI[key])) {
+          addPrimitiveType(queryAPI, key, queryUI);
+        } else if (isArrayHasLength(queryAPI[key])) {
+          addArray(queryAPI, key, queryUI);
+        } else if (isObject(queryAPI[key])) {
+          addObject(queryAPI, key, queryUI);
+        }
       }
     });
   }
+}
+
+function isIncluded(key: string) {
+  const excluded = ["path", "activeOnly"];
+  return !excluded.includes(key);
 }
 
 function isPrimitiveType(object: any) {
@@ -81,12 +86,9 @@ function isSimpleOr(key: string, object: any) {
 }
 
 function addSimpleOr(queryAPI: any, index: number, key: string, queryUI: QueryDisplay) {
-  console.log(queryAPI, index, key, queryUI);
   const fromList: any[] = [];
-
   const element = { ...queryAPI[key][index] };
   delete queryAPI[key];
-  console.log(element);
   if (isObjectHasKeys(element, ["from"])) {
     element.from.forEach(async (from: any) => {
       from.label = (await entityService.getPartialEntity(from["@id"], [RDFS.LABEL]))[RDFS.LABEL];
@@ -101,7 +103,7 @@ function addFrom(queryAPI: any, key: string, queryUI: QueryDisplay) {
   queryAPI[key].forEach(async (from: any) => {
     const label = (await entityService.getPartialEntity(from["@id"], [RDFS.LABEL]))[RDFS.LABEL];
     const queryDisplay = buildQueryDisplay(label, QueryDisplayType.From, from);
-    queryUI.children?.push(queryDisplay);
+    queryUI.children?.unshift(queryDisplay);
   });
 }
 
@@ -125,13 +127,14 @@ function addArray(queryAPI: any, key: string, queryUI: QueryDisplay) {
 
 function addObject(queryAPI: any, key: string, queryUI: QueryDisplay) {
   const queryDisplay = buildQueryDisplay(key, getQueryDisplayType(queryAPI[key]));
-  queryUI.children?.push(queryDisplay);
   buildRecursively(queryAPI[key], queryDisplay);
+  queryUI.children?.push(queryDisplay);
 }
 
 function addSimpleWhere(queryAPI: any, key: string, queryUI: QueryDisplay) {
-  const queryDisplay = buildQueryDisplay(key, QueryDisplayType.SimpleWhere, { ...queryAPI[key] });
-  queryUI.children?.push(queryDisplay);
+  const where = buildQueryDisplay(key, QueryDisplayType.Default);
+  where.children?.push(buildQueryDisplay(key, QueryDisplayType.PropertyIs, { ...queryAPI[key] }));
+  queryUI.children?.push(where);
   delete queryAPI[key];
 }
 

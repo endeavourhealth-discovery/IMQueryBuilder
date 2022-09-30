@@ -3,17 +3,22 @@
     <SplitterPanel class="flex justify-content-center">
       <Tree :value="queryDisplay" class="tree-container">
         <template #default="{ node }">{{ node.label }}</template>
-        <template #simpleWhere="{ node }"> {{ node.value.property.name }} -> {{ node.value.is.name }} </template>
+        <template #propertyIs="{ node }">
+          <IMViewerLink :iri="node.value.property['@id']" :label="node.value.property.name" /> =
+          <IMViewerLink :iri="node.value.is['@id']" :label="node.value.is.name" />
+        </template>
         <template #string="{ node }">{{ node.value }}</template>
         <template #iri="{ node }"> {{ node.label }} <IMViewerLink :iri="node.value" /></template>
         <template #boolean="{ node }">{{ node.label }}</template>
         <template #from="{ node }">
-          <IMViewerLink :iri="node.value['@id']" :label="node.value.includeSubtypes ? node.label + ' including subtypes' : node.label" />
+          <IMViewerLink v-if="node.value.includeSubtypes" :iri="node.value['@id']" :label="node.label + ' including subtypes'" />
+          <IMViewerLink v-else :iri="node.value['@id']" :label="node.label" />
         </template>
 
         <template #simpleOr="{ node }">
           <div v-for="(from, index) in node.value" :key="index">
-            <IMViewerLink :iri="from['@id']" :label="from.includeSubtypes ? from.label + ' including subtypes' : from.label" />
+            <IMViewerLink v-if="from.includeSubtypes" :iri="from['@id']" :label="from.label + ' including subtypes'" />
+            <IMViewerLink v-else :iri="node.value['@id']" :label="from.label" />
           </div>
         </template>
       </Tree>
@@ -40,13 +45,13 @@ export default defineComponent({
     const queryDisplay = ref<QueryDisplay[]>();
 
     onMounted(() => {
-      queryDisplay.value = buildQueryToQueryDisplay(props.query).children;
+      queryDisplay.value = buildQueryToQueryDisplay({ ...props.query }).children;
     });
 
     watch(
       () => props.query,
       newValue => {
-        queryDisplay.value = buildQueryToQueryDisplay(newValue).children;
+        queryDisplay.value = buildQueryToQueryDisplay({ ...newValue }).children;
       }
     );
 
