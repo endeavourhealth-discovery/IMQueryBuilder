@@ -88,4 +88,76 @@ const PainInLowerLimbORChestPainMinus = {
     activeOnly: true
   }
 };
-export { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus, Aged70to74 };
+
+const simpleListSetQuery = {
+  where: {
+    from: [
+      {
+        "@id": "http://snomed.info/sct#1240451000000106",
+        includeSubtypes: true
+      },
+      {
+        "@id": "http://snomed.info/sct#1240711000000104",
+        includeSubtypes: true
+      }
+    ]
+  }
+};
+
+const simpleListWithExclusionsSetQuery = {
+  where: {
+    from: [
+      {
+        "@id": "http://snomed.info/sct#387713003",
+        includeSubtypes: true
+      },
+      {
+        "@id": "http://snomed.info/sct#86273004",
+        includeSubtypes: true
+      }
+    ],
+    notExist: {
+      from: [
+        {
+          "@id": "http://snomed.info/sct#363244004",
+          includeSubtypes: true
+        }
+      ]
+    }
+  }
+};
+
+const refinedConceptsSetQuery = {
+  where: {
+    from: [
+      {
+        "@id": "http://snomed.info/sct#763158003",
+        includeSubtypes: true
+      }
+    ],
+    path: "http://endhealth.info/im#roleGroup",
+    and: [
+      {
+        property: {
+          "@id": "http://snomed.info/sct#127489000",
+          includeSubtypes: true
+        },
+        is: {
+          "@id": "http://snomed.info/sct#372665008",
+          includeSubtypes: true
+        }
+      },
+      {
+        property: {
+          "@id": "http://snomed.info/sct#411116001",
+          includeSubtypes: true
+        },
+        is: {
+          "@id": "http://snomed.info/sct#385268001",
+          includeSubtypes: true
+        }
+      }
+    ]
+  }
+};
+export { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus, Aged70to74, simpleListSetQuery, simpleListWithExclusionsSetQuery, refinedConceptsSetQuery };
