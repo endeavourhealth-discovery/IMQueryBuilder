@@ -4,7 +4,7 @@ import axios from "axios";
 
 const { DataTypeCheckers } = Helpers;
 const { isArrayHasLength, isObjectHasKeys, isObject } = DataTypeCheckers;
-const { RDFS } = Vocabulary;
+const { RDFS, IM } = Vocabulary;
 const { EntityService } = Services;
 const { QueryDisplayType } = Enums;
 const entityService = new EntityService(axios);
@@ -30,7 +30,7 @@ export function buildQueryDisplay(label: string, type?: any, value?: any, select
 function buildRecursively(queryAPI: any, queryUI: QueryDisplay) {
   if (queryAPI !== null) {
     Object.keys(queryAPI).forEach(key => {
-      if (isIncluded(key)) {
+      if (isIncluded(key, queryAPI[key])) {
         if (isSimpleWhere(key, queryAPI[key])) {
           addSimpleWhere(queryAPI, key, queryUI);
         }
@@ -49,8 +49,9 @@ function buildRecursively(queryAPI: any, queryUI: QueryDisplay) {
   }
 }
 
-function isIncluded(key: string) {
-  const excluded = ["path", "activeOnly"];
+function isIncluded(key: string, value: any) {
+  if ("path" === key && IM.ROLE_GROUP === value) return false;
+  const excluded = ["activeOnly"];
   return !excluded.includes(key);
 }
 
