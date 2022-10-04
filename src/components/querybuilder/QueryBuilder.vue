@@ -22,8 +22,8 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="PainInLowerLimbORChestPainMinus.query" /> </TabPanel>
-      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="PainInLowerLimbORChestPainMinus.query" /></TabPanel>
+      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="refinedConceptsSetQuery" /> </TabPanel>
+      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="refinedConceptsSetQuery" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
@@ -39,7 +39,14 @@ import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/inte
 import PropertyInput from "./definitionComponents/PropertyInput.vue";
 import QueryDisplay from "./QueryDisplay.vue";
 import axios from "axios";
-import { AsthmaSubTypesCore, PainInLowerLimbORChestPainMinus, Aged70to74 } from "../../tests/testData/ExampleQueries";
+import {
+  AsthmaSubTypesCore,
+  PainInLowerLimbORChestPainMinus,
+  Aged70to74,
+  simpleListSetQuery,
+  simpleListWithExclusionsSetQuery,
+  refinedConceptsSetQuery
+} from "../../tests/testData/ExampleQueries";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS } = Vocabulary;
 const { EntityService, QueryService } = Services;
@@ -115,6 +122,9 @@ export default defineComponent({
     }
 
     return {
+      simpleListSetQuery,
+      simpleListWithExclusionsSetQuery,
+      refinedConceptsSetQuery,
       AsthmaSubTypesCore,
       PainInLowerLimbORChestPainMinus,
       Aged70to74,

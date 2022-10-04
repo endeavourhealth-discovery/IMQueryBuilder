@@ -30,10 +30,13 @@
 <script lang="ts">
 import { defineComponent, onMounted, PropType } from "vue";
 import { Ref, ref, watch } from "vue";
-import { buildQueryToQueryDisplay } from "../../builders/QueryDisplayBuilder";
 import VueJsonPretty from "vue-json-pretty";
 import { QueryDisplay } from "im-library/dist/types/interfaces/Interfaces";
 import IMViewerLink from "./displayComponents/IMViewerLink.vue";
+import { Enums, Services } from "im-library";
+import axios from "axios";
+const { QueryDisplayType } = Enums;
+const { QueryService } = Services;
 
 export default defineComponent({
   name: "QueryDisplay",
@@ -42,18 +45,23 @@ export default defineComponent({
     query: { type: Object as PropType<any>, required: true }
   },
   setup(props, _ctx) {
+    const queryService = new QueryService(axios);
     const queryDisplay = ref<QueryDisplay[]>();
 
-    onMounted(() => {
-      queryDisplay.value = buildQueryToQueryDisplay({ ...props.query }).children;
+    onMounted(async () => {
+      await getQueryDisplay(props.query);
     });
 
     watch(
       () => props.query,
-      newValue => {
-        queryDisplay.value = buildQueryToQueryDisplay({ ...newValue }).children;
+      async newValue => {
+        await getQueryDisplay(newValue);
       }
     );
+
+    async function getQueryDisplay(query: any) {
+      queryDisplay.value = (await queryService.getSetQueryDisplay(query)).children;
+    }
 
     return { queryDisplay };
   }
