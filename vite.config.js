@@ -13,7 +13,7 @@ export default defineConfig({
     },
     resolve: {
         dedupe: ["vue"],
-        alias: {"@": path.resolve(__dirname, "./src"), "./runtimeConfig": "./runtimeConfig.browser"}
+        alias: { "@": path.resolve(__dirname, "./src"), "./runtimeConfig": "./runtimeConfig.browser" }
     },
     test: {
         globals: true,
@@ -29,14 +29,22 @@ export default defineConfig({
         setupFiles: './tests/setupTests.js',
     },
     server: {
+        port: 8082,
         proxy: {
             '/imapi': {
-                target: 'http://localhost:8080',
+                target: 'http://127.0.0.1:8080',
                 changeOrigin: true,
                 secure: false,
                 ws: true,
                 rewrite: (p) => p.replace(/^\/imapi/, '')
+            },
+            "/nodeapi": {
+                target: "http://127.0.0.1:3000",
+                changeOrigin: true,
+                secure: false,
+                ws: true,
+                rewrite: p => p.replace(/^\/nodeapi/, "")
             }
-        }
+        },
     }
 });
