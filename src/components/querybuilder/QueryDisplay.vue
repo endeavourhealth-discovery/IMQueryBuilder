@@ -3,20 +3,24 @@
     <Tree :value="queryDisplay" class="tree-container">
       <template #default="{ node }">{{ node.label }}</template>
       <template #propertyIs="{ node }">
-        <IMViewerLink :iri="node.value.property['@id']" :label="node.value.property.name" /> =
-        <IMViewerLink :iri="node.value.is['@id']" :label="node.value.is.name" />
+        <IMViewerLink
+          :iri="node.value.property['@id']"
+          :label="node.value.property.includeSubtypes ? node.value.property.name + '*' : node.value.property.name"
+        />
+        =
+        <IMViewerLink :iri="node.value.is['@id']" :label="node.value.is.includeSubtypes ? node.value.is.name + '*' : node.value.is.name" />
       </template>
       <template #string="{ node }">{{ node.value }}</template>
       <template #iri="{ node }"> {{ node.label }} <IMViewerLink :iri="node.value" /></template>
       <template #boolean="{ node }">{{ node.label }}</template>
       <template #from="{ node }">
-        <IMViewerLink v-if="node.value.includeSubtypes" :iri="node.value['@id']" :label="node.label + ' including subtypes'" />
+        <IMViewerLink v-if="node.value.includeSubtypes" :iri="node.value['@id']" :label="node.label + '*'" />
         <IMViewerLink v-else :iri="node.value['@id']" :label="node.label" />
       </template>
 
       <template #simpleOr="{ node }">
         <div v-for="(from, index) in node.value" :key="index">
-          <IMViewerLink v-if="from.includeSubtypes" :iri="from['@id']" :label="from.label + ' including subtypes'" />
+          <IMViewerLink v-if="from.includeSubtypes" :iri="from['@id']" :label="from.label + '*'" />
           <IMViewerLink v-else :iri="node.value['@id']" :label="from.label" />
         </div>
       </template>

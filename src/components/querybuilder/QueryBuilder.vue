@@ -22,8 +22,8 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="refinedConceptsSetQuery" /> </TabPanel>
-      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="refinedConceptsSetQuery" /></TabPanel>
+      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="example" /> </TabPanel>
+      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="example" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
@@ -49,15 +49,15 @@ import {
 } from "../../tests/testData/ExampleQueries";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS } = Vocabulary;
-const { EntityService, QueryService } = Services;
+const { EntityService } = Services;
 export default defineComponent({
   name: "QueryBuilder",
   components: { QueryTree, VueJsonPretty, PropertyInput, QueryDisplay },
   setup(_props, _ctx) {
-    const queryService = new QueryService(axios);
     const entityService = new EntityService(axios);
     const abortController = ref(new AbortController());
     const options = ref({ status: [] as TTIriRef[], scheme: [] as TTIriRef[], type: [] as TTIriRef[] });
+    const example = refinedConceptsSetQuery;
 
     onMounted(async () => {
       options.value.status = await searchByIsA([IM.STATUS]);
@@ -122,12 +122,7 @@ export default defineComponent({
     }
 
     return {
-      simpleListSetQuery,
-      simpleListWithExclusionsSetQuery,
-      refinedConceptsSetQuery,
-      AsthmaSubTypesCore,
-      PainInLowerLimbORChestPainMinus,
-      Aged70to74,
+      example,
       fullQuery,
       currentQueryObject,
       queryNodes,
