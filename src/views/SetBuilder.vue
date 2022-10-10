@@ -22,8 +22,6 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="example" /> </TabPanel>
-      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="example" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
@@ -31,13 +29,13 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
-import QueryTree from "./QueryTree.vue";
+import QueryTree from "../components/querybuilder/QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import { Helpers, Vocabulary, Services } from "im-library";
 import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import PropertyInput from "./definitionComponents/PropertyInput.vue";
-import QueryDisplay from "./QueryDisplay.vue";
+import PropertyInput from "../components/querybuilder/definitionComponents/PropertyInput.vue";
+import QueryDisplay from "../components/querybuilder/QueryDisplay.vue";
 import axios from "axios";
 import {
   AsthmaSubTypesCore,
@@ -46,9 +44,9 @@ import {
   simpleListSetQuery,
   simpleListWithExclusionsSetQuery,
   refinedConceptsSetQuery
-} from "../../tests/testData/ExampleQueries";
+} from "../tests/testData/ExampleQueries";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
-const { IM, RDFS } = Vocabulary;
+const { IM, RDFS, SHACL } = Vocabulary;
 const { EntityService } = Services;
 export default defineComponent({
   name: "QueryBuilder",
@@ -60,6 +58,8 @@ export default defineComponent({
     const example = refinedConceptsSetQuery;
 
     onMounted(async () => {
+      const properties = (await entityService.getPartialEntity("http://endhealth.info/im#SetShape", [SHACL.PROPERTY]))[SHACL.PROPERTY];
+      console.log(properties);
       options.value.status = await searchByIsA([IM.STATUS]);
       options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
       options.value.type = await searchByIsA([RDFS.CLASS]);
