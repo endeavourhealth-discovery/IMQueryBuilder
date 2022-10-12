@@ -7,6 +7,7 @@
           <div class="property-container">
             <div class="property-component" v-for="property in currentQueryObject.children" :key="property.key">
               <PropertyInput
+                :isSetQuery="true"
                 :property="property"
                 :parentType="currentQueryObject.type"
                 :options="options"
@@ -27,7 +28,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
 import QueryTree from "../components/querybuilder/QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
@@ -35,7 +36,6 @@ import "vue-json-pretty/lib/styles.css";
 import { Helpers, Vocabulary, Services } from "im-library";
 import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "../components/querybuilder/definitionComponents/PropertyInput.vue";
-import QueryDisplay from "../components/querybuilder/QueryDisplay.vue";
 import axios from "axios";
 import {
   AsthmaSubTypesCore,
@@ -48,94 +48,81 @@ import {
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS, SHACL } = Vocabulary;
 const { EntityService } = Services;
-export default defineComponent({
-  name: "QueryBuilder",
-  components: { QueryTree, VueJsonPretty, PropertyInput, QueryDisplay },
-  setup(_props, _ctx) {
-    const entityService = new EntityService(axios);
-    const abortController = ref(new AbortController());
-    const options = ref({ status: [] as TTIriRef[], scheme: [] as TTIriRef[], type: [] as TTIriRef[] });
-    const example = refinedConceptsSetQuery;
 
-    onMounted(async () => {
-      const properties = (await entityService.getPartialEntity("http://endhealth.info/im#SetShape", [SHACL.PROPERTY]))[SHACL.PROPERTY];
-      console.log(properties);
-      options.value.status = await searchByIsA([IM.STATUS]);
-      options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
-      options.value.type = await searchByIsA([RDFS.CLASS]);
-    });
-
-    async function searchByIsA(isA: string[]) {
-      const searchRequest = {} as SearchRequest;
-      searchRequest.isA = isA;
-      if (!isObject(abortController.value)) {
-        abortController.value.abort();
-      }
-
-      abortController.value = new AbortController();
-      const results = await entityService.advancedSearch(searchRequest, abortController.value);
-      return results.map(summary => {
-        return { "@id": summary.iri, name: summary.name };
-      });
-    }
-
-    const initNode = {
-      key: 0,
-      label: "query",
-      type: {
-        firstType: "org.endeavourhealth.imapi.model.iml.Query"
-      },
-      value: "",
-      children: []
-    } as QueryObject;
-    const fullQuery = ref<QueryObject>(initNode);
-    const currentQueryObject = ref<QueryObject>(initNode);
-    const queryNodes = ref({});
-
-    queryNodes.value = [fullQuery.value];
-
-    function onSelect(nodeContents: any) {
-      currentQueryObject.value = nodeContents;
-    }
-
-    function cancelChanges() {
-      currentQueryObject.value = {} as QueryObject;
-    }
-
-    function saveChanges() {
-      console.log("save");
-    }
-
-    function addProperty() {
-      if (!isArrayHasLength(currentQueryObject.value.children)) {
-        currentQueryObject.value.children = [];
-      }
-      currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999), selectable: false } as QueryObject);
-    }
-
-    function updateCurrentObject(newQueryObject: QueryObject) {
-      currentQueryObject.value = newQueryObject;
-    }
-
-    function deleteProperty(propertyName: string) {
-      currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.label !== propertyName);
-    }
-
-    return {
-      example,
-      fullQuery,
-      currentQueryObject,
-      queryNodes,
-      options,
-      deleteProperty,
-      updateCurrentObject,
-      saveChanges,
-      addProperty,
-      cancelChanges,
-      onSelect
-    };
-  }
+const entityService = new EntityService(axios);
+const abortController = ref(new AbortController());
+const options = ref({
+  status: [] as TTIriRef[],
+  scheme: [] as TTIriRef[],
+  type: [] as TTIriRef[],
+  boolean: [
+    { name: "True", value: true },
+    { name: "False", value: false }
+  ]
 });
+const example = refinedConceptsSetQuery;
+
+onMounted(async () => {
+  options.value.status = await searchByIsA([IM.STATUS]);
+  options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
+  options.value.type = await searchByIsA([RDFS.CLASS]);
+});
+
+async function searchByIsA(isA: string[]) {
+  const searchRequest = {} as SearchRequest;
+  searchRequest.isA = isA;
+  if (!isObject(abortController.value)) {
+    abortController.value.abort();
+  }
+
+  abortController.value = new AbortController();
+  const results = await entityService.advancedSearch(searchRequest, abortController.value);
+  return results.map(summary => {
+    return { "@id": summary.iri, name: summary.name };
+  });
+}
+
+const initNode = {
+  key: 0,
+  label: "query",
+  type: {
+    firstType: "org.endeavourhealth.imapi.model.iml.Query"
+  },
+  value: "",
+  children: []
+} as QueryObject;
+const fullQuery = ref<QueryObject>(initNode);
+const currentQueryObject = ref<QueryObject>(initNode);
+const queryNodes = ref({});
+
+queryNodes.value = [fullQuery.value];
+
+function onSelect(nodeContents: any) {
+  currentQueryObject.value = nodeContents;
+}
+
+function cancelChanges() {
+  currentQueryObject.value = {} as QueryObject;
+}
+
+function saveChanges() {
+  console.log("save");
+}
+
+function addProperty() {
+  if (!isArrayHasLength(currentQueryObject.value.children)) {
+    currentQueryObject.value.children = [];
+  }
+  currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999), selectable: false } as QueryObject);
+}
+
+function updateCurrentObject(newQueryObject: QueryObject) {
+  currentQueryObject.value = newQueryObject;
+}
+
+function deleteProperty(propertyName: string) {
+  currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.label !== propertyName);
+}
 </script>
 
 <style scoped>
