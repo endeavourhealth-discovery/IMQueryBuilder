@@ -54,7 +54,15 @@ const { EntityService } = Services;
 
 const entityService = new EntityService(axios);
 const abortController = ref(new AbortController());
-const options = ref({ status: [] as TTIriRef[], scheme: [] as TTIriRef[], type: [] as TTIriRef[] });
+const options = ref({
+  status: [] as TTIriRef[],
+  scheme: [] as TTIriRef[],
+  type: [] as TTIriRef[],
+  boolean: [
+    { name: "True", value: true },
+    { name: "False", value: false }
+  ]
+});
 const example = refinedConceptsSetQuery;
 
 onMounted(async () => {

@@ -1,7 +1,7 @@
 <template>
-  <div class="property-value-wrapper">
+  <div class="property-value-container">
     <div class="property-name-container">
-      <Button icon="pi pi-times" @remove="removeProperty" />
+      <Button icon="pi pi-times" @click="removeProperty" />
       <Dropdown v-model="propertyName" :options="classProperties" placeholder="Select property to add" optionLabel="name" @change="onSelect" />
     </div>
     <div v-if="props.property.type" class="property-value-container">
@@ -35,7 +35,7 @@ const props = defineProps({
 });
 const emit = defineEmits({
   changeCurrentObject: (_payload: QueryObject) => true,
-  removeProperty: (_payload: string) => true
+  removeProperty: (_payload: number) => true
 });
 
 const propertyName = ref<string>();
@@ -119,7 +119,7 @@ function addValue() {
 }
 
 function removeProperty() {
-  if (props.property.label) emit("removeProperty", props.property.label);
+  if (props.property.key) emit("removeProperty", props.property.key);
 }
 </script>
 
@@ -128,7 +128,7 @@ function removeProperty() {
   padding-left: 1rem;
   padding-right: 1rem;
 }
-.property-value-wrapper {
+.property-value-container {
   display: flex;
   flex-flow: row wrap;
   align-items: baseline !important;
