@@ -1,7 +1,7 @@
 <template>
   <div class="query-builder-main-container">
     <QueryTree :queryNodes="queryNodes" :selectedNodeKey="selectedNodeKey" @selected="onSelect" />
-    <TabView class="tab-view-container" ref="tabview1">
+    <TabView ref="tabview">
       <TabPanel header="Edit">
         <div class="tab-content-container">
           <div class="property-container">
@@ -31,11 +31,11 @@
           </div>
         </div>
       </TabPanel>
-      <TabPanel class="tab-panel" header="JSON">
-        <vue-json-pretty class="json" :path="'res'" :data="fullQuery" />
+      <TabPanel header="JSON">
+        <div class="tab-panel"><vue-json-pretty class="json" :path="'res'" :data="fullQuery" /></div>
       </TabPanel>
-      <TabPanel class="tab-panel" header="IM query">
-        <vue-json-pretty class="json" :path="'res'" :show-length="true" :data="imquery" :editable="true" />
+      <TabPanel header="IM query">
+        <div class="tab-panel"><vue-json-pretty class="json" :path="'res'" :show-length="true" :data="imquery" :editable="true" /></div>
       </TabPanel>
     </TabView>
     <Dialog
@@ -231,7 +231,7 @@ async function testQuery() {
   justify-content: end;
 }
 
-.tab-view-container {
+.p-tabview {
   flex: 1 0;
   height: 100%;
 }

@@ -131,6 +131,13 @@ async function getClassProperties(type: string) {
   if (props.includeProperties) {
     fields = fields.filter(field => props.includeProperties?.includes(field.name));
   }
+  const containsProperty = fields.some(field => field.name === "property");
+  const containsIs = fields.some(field => field.name === "is");
+  if (containsProperty && containsIs) {
+    fields = fields.filter(field => field.name !== "property" && field.name !== "is");
+    fields.push({ name: "porpertyIs", firstType: "propertyIs" });
+  }
+
   return fields;
 }
 

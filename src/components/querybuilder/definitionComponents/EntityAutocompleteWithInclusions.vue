@@ -1,7 +1,8 @@
 <template>
-  <div class="entity-autocomplete-container"></div>
-  <EntityAutocomplete :property="property" :parentType="parentType" @change="handleChange" />
-  <MultiSelect v-if="props.property.children" v-model="included" :options="includeOptions" placeholder="Select inclusions" @change="handleChange" />
+  <div class="entity-autocomplete-container">
+    <EntityAutocomplete :property="property" @change="handleChange" />
+    <MultiSelect v-if="props.property.children" v-model="included" :options="includeOptions" placeholder="Select inclusions" @change="handleChange" />
+  </div>
 </template>
 
 <script setup lang="ts">
