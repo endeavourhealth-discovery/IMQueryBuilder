@@ -12,10 +12,10 @@
               :key="property.key"
             >
               <PropertyInput
-                :isSetQuery="true"
                 :property="property"
                 :parentType="currentQueryObject.type"
                 :options="options"
+                :include-properties="includeProperties"
                 @changeCurrentObject="updateCurrentObject"
                 @removeProperty="deleteProperty"
               />
@@ -26,22 +26,44 @@
           </div>
           <div class="footer-buttons">
             <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" @click="cancelChanges" />
+            <Button icon="pi pi-bolt" label="Test" class="p-button-help one-rem-margin" @click="testQuery" />
             <Button icon="pi pi-check" label="Save" class="one-rem-margin" @click="saveChanges" />
           </div>
         </div>
       </TabPanel>
-      <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
+      <TabPanel class="tab-panel" header="JSON">
+        <vue-json-pretty class="json" :path="'res'" :data="fullQuery" />
+      </TabPanel>
+      <TabPanel class="tab-panel" header="IM query">
+        <vue-json-pretty class="json" :path="'res'" :show-length="true" :data="imquery" :editable="true" />
+      </TabPanel>
     </TabView>
+    <Dialog
+      :header="'Results: ' + testQueryResults.length"
+      v-model:visible="showDialog"
+      :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+      :style="{ width: '50vw' }"
+    >
+      <div v-if="isArrayHasLength(testQueryResults)">
+        <div v-for="iriRef of testQueryResults">
+          <IMViewerLink :iri="iriRef['@id']" :label="iriRef.name" />
+        </div>
+      </div>
+      <div v-else>No concepts found</div>
+      <template #footer>
+        <Button label="OK" icon="pi pi-check" @click="showDialog = false" autofocus />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch, Ref } from "vue";
 import QueryTree from "../components/querybuilder/QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import { Helpers, Vocabulary, Services } from "im-library";
-import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
+import { QueryObject, QueryRequest, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "../components/querybuilder/definitionComponents/PropertyInput.vue";
 import axios from "axios";
 import {
@@ -52,12 +74,37 @@ import {
   simpleListWithExclusionsSetQuery,
   refinedConceptsSetQuery
 } from "../tests/testData/ExampleQueries";
+import _ from "lodash";
+import { buildIMQuery } from "@/builders/IMQueryBuilder";
+import { Query } from "im-library/dist/types/models/modules/AutoGen";
+import { useToast } from "primevue/usetoast";
+import { ToastMessageOptions } from "primevue/toast";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS, SHACL } = Vocabulary;
-const { EntityService } = Services;
+const { EntityService, QueryService, LoggerService } = Services;
+const toast = useToast();
 
+const includeProperties = [
+  "where",
+  "and",
+  "or",
+  "notExist",
+  "from",
+  "@id",
+  "iri",
+  "path",
+  "property",
+  "is",
+  "includeSupertypes",
+  "includeMembers",
+  "includeSubtypes",
+  "excludeSelf"
+];
 const entityService = new EntityService(axios);
+const queryService = new QueryService(axios);
 const abortController = ref(new AbortController());
+const showDialog = ref(false);
+const testQueryResults: Ref<TTIriRef[]> = ref([]);
 const options = ref({
   status: [] as TTIriRef[],
   scheme: [] as TTIriRef[],
@@ -101,8 +148,16 @@ const initNode = {
 const fullQuery = ref<QueryObject>(initNode);
 const currentQueryObject = ref<QueryObject>(initNode);
 const queryNodes = ref({});
+const imquery: Ref<Query> = ref({} as Query);
 
 queryNodes.value = [fullQuery.value];
+
+watch(
+  () => _.cloneDeep(fullQuery.value),
+  (newVal, oldVal) => {
+    imquery.value = buildIMQuery(newVal);
+  }
+);
 
 function onSelect(nodeContents: any) {
   currentQueryObject.value = nodeContents;
@@ -129,6 +184,20 @@ function updateCurrentObject(newQueryObject: QueryObject) {
 
 function deleteProperty(propertyKey: number) {
   currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.key !== propertyKey);
+}
+
+async function handleClick() {
+  await navigator.clipboard.writeText(JSON.stringify(imquery.value));
+  toast.add(LoggerService.success("Value copied to clipboard") as ToastMessageOptions);
+}
+
+async function testQuery() {
+  const result = await queryService.queryIM(imquery.value as unknown as QueryRequest);
+  console.log(result)
+  if (isArrayHasLength(result.entities)) {
+    testQueryResults.value = await entityService.getNames(result.entities.map(entity => entity["@id"]));
+  }
+  showDialog.value = true;
 }
 </script>
 

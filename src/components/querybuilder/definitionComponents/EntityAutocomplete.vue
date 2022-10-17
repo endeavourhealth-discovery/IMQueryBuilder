@@ -12,84 +12,72 @@
   </AutoComplete>
 </template>
 
-<script lang="ts">
-import { GenericType, QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import { defineComponent, onMounted, PropType, ref } from "vue";
+<script setup lang="ts">
+import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
+import { onMounted, PropType, ref } from "vue";
 import { Services, Enums, Helpers, Config } from "im-library";
 import axios from "axios";
 const { EntityService } = Services;
 const { isObject, isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
-export default defineComponent({
-  name: "EntityAutocomplete",
-  props: {
-    property: { type: Object as PropType<QueryObject>, required: true }
-  },
-  setup(props, _ctx) {
-    const suggestions = ref();
-    const entityService = new EntityService(axios);
-    const abortController = ref(new AbortController());
-    const selectedIriRefs = ref<TTIriRef[]>([]);
+const props = defineProps({
+  property: { type: Object as PropType<QueryObject>, required: true }
+});
 
-    onMounted(() => {
-      if (isArrayHasLength(props.property.children)) {
-        selectedIriRefs.value = props.property.children?.map(selected => selected.value) as TTIriRef[];
-      } else if (isObjectHasKeys(props.property, ["value"])) {
-        selectedIriRefs.value.push(props.property.value);
-      }
-    });
+const suggestions = ref();
+const entityService = new EntityService(axios);
+const abortController = ref(new AbortController());
+const selectedIriRefs = ref<TTIriRef[]>([]);
 
-    function onSelect(selected: { value: TTIriRef }) {
-      if (!isArrayHasLength(props.property.children)) {
-        props.property.children = [] as QueryObject[];
-      }
-      const iriRef = {
-        key: Math.floor(Math.random() * 9999999999999999),
-        label: selected.value.name,
-        type: { firstType: "org.endeavourhealth.imapi.model.tripletree.TTIriRef" },
-        value: { "@id": selected.value["@id"], name: selected.value.name },
-        selectable: false
-      };
-      props.property.children?.push(iriRef);
-    }
-
-    function onUnselect(unselected: { value: TTIriRef }) {
-      props.property.children = props.property.children?.filter(iriRef => iriRef.value["@id"] !== unselected.value["@id"]);
-    }
-
-    async function searchEntity(searchTerm: any): Promise<void> {
-      if (searchTerm.query.length > 0) {
-        const searchRequest = {} as SearchRequest;
-        searchRequest.termFilter = searchTerm.query;
-        searchRequest.sortBy = Enums.SortBy.Usage;
-        searchRequest.page = 1;
-        searchRequest.size = 100;
-        searchRequest.sortDirection = Enums.SortDirection.DESC;
-        searchRequest.sortField = "weighting";
-        searchRequest.schemeFilter = Config.FilterDefaults.schemeOptions;
-        searchRequest.typeFilter = Config.FilterDefaults.typeOptions;
-        searchRequest.statusFilter = Config.FilterDefaults.statusOptions;
-        if (!isObject(abortController.value)) {
-          abortController.value.abort();
-        }
-
-        abortController.value = new AbortController();
-        const results = await entityService.advancedSearch(searchRequest, abortController.value);
-        suggestions.value = results.map(result => {
-          return { name: result.name, "@id": result.iri };
-        });
-      }
-    }
-
-    return {
-      suggestions,
-      selectedIriRefs,
-      onSelect,
-      onUnselect,
-      searchEntity
-    };
+onMounted(() => {
+  if (isArrayHasLength(props.property.children)) {
+    selectedIriRefs.value = props.property.children?.map(selected => selected.value) as TTIriRef[];
+  } else if (isObjectHasKeys(props.property, ["value"])) {
+    selectedIriRefs.value.push(props.property.value);
   }
 });
+
+function onSelect(selected: { value: TTIriRef }) {
+  if (!isArrayHasLength(props.property.children)) {
+    props.property.children = [] as QueryObject[];
+  }
+  const iriRef = {
+    key: Math.floor(Math.random() * 9999999999999999),
+    label: selected.value.name,
+    type: { firstType: "org.endeavourhealth.imapi.model.tripletree.TTIriRef" },
+    value: { "@id": selected.value["@id"], name: selected.value.name },
+    selectable: false
+  };
+  props.property.children?.push(iriRef);
+}
+
+function onUnselect(unselected: { value: TTIriRef }) {
+  props.property.children = props.property.children?.filter(iriRef => iriRef.value["@id"] !== unselected.value["@id"]);
+}
+
+async function searchEntity(searchTerm: any): Promise<void> {
+  if (searchTerm.query.length > 0) {
+    const searchRequest = {} as SearchRequest;
+    searchRequest.termFilter = searchTerm.query;
+    searchRequest.sortBy = Enums.SortBy.Usage;
+    searchRequest.page = 1;
+    searchRequest.size = 100;
+    searchRequest.sortDirection = Enums.SortDirection.DESC;
+    searchRequest.sortField = "weighting";
+    searchRequest.schemeFilter = Config.FilterDefaults.schemeOptions;
+    searchRequest.typeFilter = Config.FilterDefaults.typeOptions;
+    searchRequest.statusFilter = Config.FilterDefaults.statusOptions;
+    if (!isObject(abortController.value)) {
+      abortController.value.abort();
+    }
+
+    abortController.value = new AbortController();
+    const results = await entityService.advancedSearch(searchRequest, abortController.value);
+    suggestions.value = results.map(result => {
+      return { name: result.name, "@id": result.iri };
+    });
+  }
+}
 </script>
 
 <style scoped></style>

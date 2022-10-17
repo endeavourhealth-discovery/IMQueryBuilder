@@ -5,9 +5,13 @@
       <TabPanel header="Edit">
         <div class="tab-content-container">
           <div class="property-container">
-            <div class="property-component" v-for="property in currentQueryObject.children" :key="property.key">
+            <div
+              class="property-component"
+              v-if="currentQueryObject.children?.length"
+              v-for="(property, index) in currentQueryObject.children"
+              :key="property.key"
+            >
               <PropertyInput
-                :isSetQuery="false"
                 :property="property"
                 :parentType="currentQueryObject.type"
                 :options="options"
@@ -15,30 +19,29 @@
                 @removeProperty="deleteProperty"
               />
             </div>
+            <div class="property-component">
+              <Button icon="pi pi-plus" label="Add" class="p-button-success one-rem-margin" @click="addProperty" />
+            </div>
           </div>
           <div class="footer-buttons">
             <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" @click="cancelChanges" />
-            <Button icon="pi pi-plus" label="Add" class="p-button-success one-rem-margin" @click="addProperty" />
             <Button icon="pi pi-check" label="Save" class="one-rem-margin" @click="saveChanges" />
           </div>
         </div>
       </TabPanel>
-      <TabPanel header="Display"><QueryDisplay class="tab-panel" :query="example" /> </TabPanel>
-      <TabPanel class="tab-panel" header="Display JSON"><VueJsonPretty class="json" :path="'res'" :data="example" /></TabPanel>
       <TabPanel class="tab-panel" header="Full query"><VueJsonPretty class="json" :path="'res'" :data="fullQuery" /></TabPanel>
     </TabView>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import QueryTree from "../components/querybuilder/QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import { Helpers, Vocabulary, Services } from "im-library";
 import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import PropertyInput from "../components/querybuilder/definitionComponents/PropertyInput.vue";
-import QueryDisplay from "../components/querybuilder/QueryDisplay.vue";
 import axios from "axios";
 import {
   AsthmaSubTypesCore,
@@ -49,7 +52,7 @@ import {
   refinedConceptsSetQuery
 } from "../tests/testData/ExampleQueries";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
-const { IM, RDFS } = Vocabulary;
+const { IM, RDFS, SHACL } = Vocabulary;
 const { EntityService } = Services;
 
 const entityService = new EntityService(axios);
@@ -123,8 +126,8 @@ function updateCurrentObject(newQueryObject: QueryObject) {
   currentQueryObject.value = newQueryObject;
 }
 
-function deleteProperty(propertyName: string) {
-  currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.label !== propertyName);
+function deleteProperty(propertyKey: number) {
+  currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.key !== propertyKey);
 }
 </script>
 
@@ -144,6 +147,10 @@ function deleteProperty(propertyName: string) {
 }
 
 .property-component {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: baseline !important;
+  justify-content: center;
   padding: 0.5rem;
 }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="property-value-container">
     <div class="property-name-container">
-      <Button icon="pi pi-times" @click="removeProperty" />
+      <Button icon="pi pi-times" class="p-button-rounded p-button-danger p-button-text" @click="removeProperty" />
       <Dropdown v-model="propertyName" :options="classProperties" placeholder="Select property to add" optionLabel="name" @change="onSelect" />
     </div>
     <div v-if="props.property.type" class="property-value-container">
@@ -12,6 +12,12 @@
       <InputText v-else-if="isTextInput" type="text" v-model="property.value" />
       <Dropdown v-else-if="isBoolean" v-model="property.value" optionLabel="name" :options="options?.boolean" />
       <EntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
+      <EntityAutocompleteWithInclusions
+        v-else-if="isTTAlias || isListOfTTAlias"
+        :property="property"
+        :parentType="parentType"
+        :include-properties="includeProperties"
+      />
       <Button v-else-if="!property.value && property.label" icon="pi pi-pencil" label="Edit value" @click="addValue" />
     </div>
   </div>
@@ -25,22 +31,24 @@ import { computed, onMounted, PropType, ref } from "vue";
 import { QueryObject, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import EntityAutocomplete from "./EntityAutocomplete.vue";
 import { FieldDto } from "im-library/dist/types/interfaces/modules/QueryBuilder";
+import EntityAutocompleteWithInclusions from "./EntityAutocompleteWithInclusions.vue";
 const { isObjectHasKeys } = Helpers.DataTypeCheckers;
 const { ClassService } = Services;
 const props = defineProps({
-  isSetQuery: { type: Boolean, required: true },
   property: { type: Object as PropType<QueryObject>, required: true },
   parentType: { type: Object as PropType<SimplifiedType>, required: true },
-  options: { type: Object as PropType<{ status: TTIriRef[]; scheme: TTIriRef[]; type: TTIriRef[]; boolean: { name: string; value: boolean }[] }> }
+  options: { type: Object as PropType<{ status: TTIriRef[]; scheme: TTIriRef[]; type: TTIriRef[]; boolean: { name: string; value: boolean }[] }> },
+  includeProperties: { type: Array<String>, required: false }
 });
 const emit = defineEmits({
   changeCurrentObject: (_payload: QueryObject) => true,
   removeProperty: (_payload: number) => true
 });
 
-const propertyName = ref<string>();
+const propertyName = ref<FieldDto>();
 const classProperties = ref<FieldDto[]>([]);
 const classService = new ClassService(axios);
+const SIMPLE_TYPES = ["java.lang.String", "boolean", "org.endeavourhealth.imapi.model.tripletree.TTAlias"];
 
 const isTextInput = computed(() => {
   return isOfClassType(props.property, "java.lang.String");
@@ -54,10 +62,8 @@ const isBoolean = computed(() => {
   return isOfClassType(props.property, "boolean");
 });
 
-const isComplexType = computed(() => {
-  const simpleTypes = ["java.lang.String", "boolean", "org.endeavourhealth.imapi.model.tripletree.TTIriRef"];
-  const isSimple = isOfClassTypes(props.property, simpleTypes);
-  return !isSimple || !!props.property.type.secondType;
+const isSelectable = computed(() => {
+  return !isOfClassTypes(props.property, SIMPLE_TYPES);
 });
 
 const isIriRef = computed(() => {
@@ -66,6 +72,14 @@ const isIriRef = computed(() => {
 
 const isListOfIriRefs = computed(() => {
   return isOfClassType(props.property, "org.endeavourhealth.imapi.model.tripletree.TTIriRef", "java.util.List");
+});
+
+const isTTAlias = computed(() => {
+  return isOfClassType(props.property, "org.endeavourhealth.imapi.model.tripletree.TTAlias");
+});
+
+const isListOfTTAlias = computed(() => {
+  return isOfClassType(props.property, "org.endeavourhealth.imapi.model.tripletree.TTAlias", "java.util.List");
 });
 
 const isStatus = computed(() => {
@@ -81,37 +95,50 @@ const isType = computed(() => {
 });
 
 function isOfClassType(queryOjbect: QueryObject, firstType: string, secondType?: string) {
+  if (!isObjectHasKeys(queryOjbect.type, ["firstType"])) return false;
   const firstTypeMatch = queryOjbect.type.firstType === firstType;
   if (secondType) return firstTypeMatch && queryOjbect.type.secondType === secondType;
   return firstTypeMatch;
 }
 
 function isOfClassTypes(queryOjbect: QueryObject, firstTypes: string[]) {
-  let isOfClassTypes = false;
+  let isClassTypes = false;
   let i = 0;
-  while (!isOfClassTypes && i < firstTypes.length) {
+  while (!isClassTypes && i < firstTypes.length) {
     if (isOfClassType(queryOjbect, firstTypes[i])) {
-      isOfClassTypes = true;
+      isClassTypes = true;
     }
     i++;
   }
 
-  return isOfClassTypes;
+  return isClassTypes;
 }
 
 onMounted(async () => {
   classProperties.value = await getClassProperties(props.parentType.firstType);
+  setDisplayLabel();
 });
 
+async function setDisplayLabel() {
+  if (props.property.label) {
+    const labelOption = classProperties.value.filter(classProp => classProp.name === props.property.label);
+    propertyName.value = labelOption[0];
+  }
+}
+
 async function getClassProperties(type: string) {
-  return await classService.getClassFields(type);
+  let fields = await classService.getClassFields(type);
+  if (props.includeProperties) {
+    fields = fields.filter(field => props.includeProperties?.includes(field.name));
+  }
+  return fields;
 }
 
 function onSelect(event: any) {
   const field = event.value as FieldDto;
   props.property.label = field.name;
   props.property.type = field;
-  if (isComplexType.value && !isListOfIriRefs.value) props.property.selectable = true;
+  props.property.selectable = isSelectable.value;
 }
 
 function addValue() {

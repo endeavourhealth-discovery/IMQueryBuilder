@@ -27,6 +27,7 @@
     "core-js": "3.23.1",
     "google-palette": "1.1.0",
     "im-library": "https://endeavour-codebuild-output.s3.eu-west-2.amazonaws.com/im-library-1.0.0.tgz",
+    "lodash": "^4.17.21",
     "path": "0.12.7",
     "primeflex": "3.2.1",
     "primeicons": "5.0.0",
@@ -40,6 +41,7 @@
     "vuex": "4.0.2"
   },
   "devDependencies": {
+    "@types/lodash": "4.14.182",
     "@cypress/vite-dev-server": "3.0.0",
     "@cypress/vue": "4.0.0",
     "@originjs/vite-plugin-commonjs": "1.0.3",
