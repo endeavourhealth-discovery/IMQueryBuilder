@@ -1,6 +1,6 @@
 <template>
   <div class="query-builder-main-container">
-    <QueryTree :queryNodes="queryNodes" @selected="onSelect" />
+    <QueryTree :queryNodes="queryNodes" :selectedNodeKey="selectedNodeKey" @selected="onSelect" />
     <TabView class="tab-view-container" ref="tabview1">
       <TabPanel header="Edit">
         <div class="tab-content-container">
@@ -114,6 +114,7 @@ const options = ref({
     { name: "False", value: false }
   ]
 });
+const selectedNodeKey = ref<number>(0);
 const example = refinedConceptsSetQuery;
 
 onMounted(async () => {
@@ -147,7 +148,7 @@ const initNode = {
 } as QueryObject;
 const fullQuery = ref<QueryObject>(initNode);
 const currentQueryObject = ref<QueryObject>(initNode);
-const queryNodes = ref({});
+const queryNodes = ref<any>({});
 const imquery: Ref<Query> = ref({} as Query);
 
 queryNodes.value = [fullQuery.value];
@@ -180,6 +181,7 @@ function addProperty() {
 
 function updateCurrentObject(newQueryObject: QueryObject) {
   currentQueryObject.value = newQueryObject;
+  selectedNodeKey.value = newQueryObject.key;
 }
 
 function deleteProperty(propertyKey: number) {
@@ -193,7 +195,6 @@ async function handleClick() {
 
 async function testQuery() {
   const result = await queryService.queryIM(imquery.value as unknown as QueryRequest);
-  console.log(result)
   if (isArrayHasLength(result.entities)) {
     testQueryResults.value = await entityService.getNames(result.entities.map(entity => entity["@id"]));
   }
