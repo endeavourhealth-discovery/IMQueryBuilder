@@ -5,7 +5,8 @@
       <Dropdown v-model="propertyName" :options="classProperties" placeholder="Select property to add" optionLabel="name" @change="onSelect" />
     </div>
     <div v-if="props.property.type" class="property-value-container">
-      <Dropdown v-if="isStatus" v-model="property.value" :options="options?.status" optionLabel="name" placeholder="Select status" />
+      <PropertyIs v-if="isPropertyIs" :include-properties="includeProperties" :parent-property="props.property" />
+      <Dropdown v-else-if="isStatus" v-model="property.value" :options="options?.status" optionLabel="name" placeholder="Select status" />
       <Dropdown v-else-if="isScheme" v-model="property.value" :options="options?.scheme" optionLabel="name" placeholder="Select scheme" />
       <MultiSelect v-else-if="isType" v-model="property.value" :options="options?.type" optionLabel="name" placeholder="Select type" />
       <Chips v-else-if="isListOfTextInput" type="text" v-model="property.value" />
@@ -32,6 +33,7 @@ import { QueryObject, TTIriRef } from "im-library/dist/types/interfaces/Interfac
 import EntityAutocomplete from "./EntityAutocomplete.vue";
 import { FieldDto } from "im-library/dist/types/interfaces/modules/QueryBuilder";
 import EntityAutocompleteWithInclusions from "./EntityAutocompleteWithInclusions.vue";
+import PropertyIs from "./PropertyIs.vue";
 const { isObjectHasKeys } = Helpers.DataTypeCheckers;
 const { ClassService } = Services;
 const props = defineProps({
@@ -90,6 +92,10 @@ const isScheme = computed(() => {
   return props.property.label === "scheme" && isIriRef;
 });
 
+const isPropertyIs = computed(() => {
+  return props.property.label === "propertyIs";
+});
+
 const isType = computed(() => {
   return props.property.label === "type" && isIriRef;
 });
@@ -135,7 +141,7 @@ async function getClassProperties(type: string) {
   const containsIs = fields.some(field => field.name === "is");
   if (containsProperty && containsIs) {
     fields = fields.filter(field => field.name !== "property" && field.name !== "is");
-    fields.push({ name: "porpertyIs", firstType: "propertyIs" });
+    fields.push({ name: "propertyIs", firstType: "propertyIs" });
   }
 
   return fields;
