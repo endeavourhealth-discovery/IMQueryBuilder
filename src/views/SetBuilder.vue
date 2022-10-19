@@ -18,7 +18,10 @@
         :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
         :style="{ width: '50vw' }"
       >
-        <div v-if="isArrayHasLength(testQueryResults)">
+        <div v-if="queryLoading" class="flex flex-row justify-contents-center align-items-center loading-container">
+          <ProgressSpinner />
+        </div>
+        <div v-else-if="!queryLoading && isArrayHasLength(testQueryResults)">
           <div v-for="iriRef of testQueryResults">
             <IMViewerLink :iri="iriRef['@id']" :label="iriRef.name" />
           </div>
@@ -60,10 +63,52 @@ const showDialog: Ref<boolean> = ref(false);
 const imquery: Ref<Query> = ref({} as Query);
 const defaultTTAlias = { includeSubtypes: true } as TTAlias;
 const clauses: Ref<SetQueryObject[]> = ref([]);
+const queryLoading: Ref<boolean> = ref(false);
+
+watch(
+  () => _.cloneDeep(clauses.value),
+  () => {
+    imquery.value = buildIMQuery(clauses.value);
+  }
+);
 
 onMounted(() => {
   addConcept();
 });
+
+function buildIMQuery(clauses: SetQueryObject[]): any {
+  const imquery = {
+    where: {
+      from: [] as any[]
+    }
+  } as any;
+
+  for (const clause of clauses) {
+    if (clause.include) {
+      if (!isObjectHasKeys(imquery.where, ["from"])) {
+        imquery.where.from = [] as any;
+      }
+      imquery.where.from.push(clause.concept);
+    } else if (!clause.include) {
+      if (!isObjectHasKeys(imquery.where, ["notExists"])) {
+        imquery.where.notExist = {
+          from: [] as any[]
+        };
+      }
+      imquery.where.notExist.from.push(clause.concept);
+    }
+
+    if (isArrayHasLength(clause.refinements)) {
+      imquery.where.path = "http://endhealth.info/im#roleGroup";
+      imquery.where.and = [] as any[];
+    }
+
+    for (const refinement of clause.refinements) {
+      imquery.where.and.push(refinement);
+    }
+  }
+  return { query: imquery };
+}
 
 function addConcept() {
   const newObject = {
@@ -75,11 +120,13 @@ function addConcept() {
 }
 
 async function testQuery() {
+  queryLoading.value = true;
+  showDialog.value = true;
   const result = await queryService.queryIM(imquery.value as unknown as QueryRequest);
   if (isArrayHasLength(result.entities)) {
     testQueryResults.value = await entityService.getNames(result.entities.map(entity => entity["@id"]));
   }
-  showDialog.value = true;
+  queryLoading.value = false;
 }
 </script>
 

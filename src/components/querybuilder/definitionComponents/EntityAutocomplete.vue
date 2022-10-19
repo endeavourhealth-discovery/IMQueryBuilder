@@ -1,7 +1,9 @@
 <template>
   <AutoComplete :multiple="true" v-model="selectedEntity" :suggestions="suggestions" @complete="searchEntity($event)" @item-select="handleChange">
     <template #item="slotProps"> {{ slotProps.item.name }} - {{ slotProps.item["@id"] }} </template>
-    <template #chip="slotProps"> {{ slotProps.value.name }} - {{ slotProps.value["@id"] }} </template>
+    <template #chip="slotProps">
+      <div v-tooltip.right="slotProps.value['@id']">{{ slotProps.value.name }}</div>
+    </template>
   </AutoComplete>
 </template>
 
