@@ -13,7 +13,7 @@
       </TabView>
 
       <Dialog
-        :header="'Results: ' + testQueryResults.length"
+        :header="queryLoading ? 'Results' : 'Results: ' + testQueryResults.length"
         v-model:visible="showDialog"
         :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
         :style="{ width: '50vw' }"

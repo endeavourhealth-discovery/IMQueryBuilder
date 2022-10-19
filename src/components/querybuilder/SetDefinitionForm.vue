@@ -26,7 +26,7 @@
           <Button icon="pi pi-times" class="p-button-rounded p-button-danger p-button-text" @click="removeRefinement(clauseIndex, refinementIndex)" />
           <EntityAutocomplete :ttAlias="refinement.property" />
           <Dropdown
-            v-model="included.concept.includeSubtypes"
+            v-model="refinement.property.includeSubtypes"
             :options="includeSubtypesOptions"
             option-label="name"
             option-value="value"
@@ -35,7 +35,7 @@
           <i class="icon pi pi-arrow-right" />
           <EntityAutocomplete :ttAlias="refinement.is" />
           <Dropdown
-            v-model="included.concept.includeSubtypes"
+            v-model="refinement.is.includeSubtypes"
             :options="includeSubtypesOptions"
             option-label="name"
             option-value="value"
@@ -97,6 +97,8 @@ function addConcept() {
 }
 .icon {
   align-self: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .clause-wrapper {
