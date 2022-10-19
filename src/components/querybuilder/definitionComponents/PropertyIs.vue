@@ -1,8 +1,8 @@
 <template>
-  <EntityAutocomplete :property="property" @change="handlePropertyChange" />
+  <!-- <EntityAutocomplete :property="property" @change="handlePropertyChange" /> -->
   <MultiSelect v-if="property.children" v-model="propertyIncluded" :options="includeOptions" placeholder="Select inclusions" @change="handlePropertyChange" />
   =>
-  <EntityAutocomplete :property="is" @change="handleIsChange" />
+  <!-- <EntityAutocomplete :property="is" @change="handleIsChange" /> -->
   <MultiSelect v-if="is.children" v-model="isIncluded" :options="includeOptions" placeholder="Select inclusions" @change="handleIsChange" />
 </template>
 

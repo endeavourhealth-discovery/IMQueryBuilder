@@ -1,196 +1,77 @@
 <template>
-  <div class="query-builder-main-container">
-    <QueryTree :queryNodes="queryNodes" :selectedNodeKey="selectedNodeKey" @selected="onSelect" />
-    <TabView ref="tabview">
-      <TabPanel header="Edit">
-        <div class="tab-content-container">
-          <div class="property-container">
-            <div
-              class="property-component"
-              v-if="currentQueryObject.children?.length"
-              v-for="(property, index) in currentQueryObject.children"
-              :key="property.key"
-            >
-              <PropertyInput
-                :property="property"
-                :parentType="currentQueryObject.type"
-                :options="options"
-                :include-properties="includeProperties"
-                @changeCurrentObject="updateCurrentObject"
-                @removeProperty="deleteProperty"
-              />
-            </div>
-            <div class="property-component">
-              <Button icon="pi pi-plus" label="Add" class="p-button-success one-rem-margin" @click="addProperty" />
-            </div>
+  <div class="query-builder-main-wrapper">
+    <div class="query-builder-main-container">
+      <TabView ref="tabview">
+        <TabPanel header="Edit">
+          <div class="tab-content-container">
+            <div class="property-container"><SetDefinitionForm :clauses="clauses" /></div>
           </div>
-          <div class="footer-buttons">
-            <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" @click="cancelChanges" />
-            <Button icon="pi pi-bolt" label="Test" class="p-button-help one-rem-margin" @click="testQuery" />
-            <Button icon="pi pi-check" label="Save" class="one-rem-margin" @click="saveChanges" />
+        </TabPanel>
+        <TabPanel header="IM query">
+          <div class="tab-panel"><vue-json-pretty class="json" :path="'res'" :show-length="true" :data="imquery" /></div>
+        </TabPanel>
+      </TabView>
+
+      <Dialog
+        :header="'Results: ' + testQueryResults.length"
+        v-model:visible="showDialog"
+        :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+        :style="{ width: '50vw' }"
+      >
+        <div v-if="isArrayHasLength(testQueryResults)">
+          <div v-for="iriRef of testQueryResults">
+            <IMViewerLink :iri="iriRef['@id']" :label="iriRef.name" />
           </div>
         </div>
-      </TabPanel>
-      <TabPanel header="JSON">
-        <div class="tab-panel"><vue-json-pretty class="json" :path="'res'" :data="fullQuery" /></div>
-      </TabPanel>
-      <TabPanel header="IM query">
-        <div class="tab-panel"><vue-json-pretty class="json" :path="'res'" :show-length="true" :data="imquery" :editable="true" /></div>
-      </TabPanel>
-    </TabView>
-    <Dialog
-      :header="'Results: ' + testQueryResults.length"
-      v-model:visible="showDialog"
-      :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
-      :style="{ width: '50vw' }"
-    >
-      <div v-if="isArrayHasLength(testQueryResults)">
-        <div v-for="iriRef of testQueryResults">
-          <IMViewerLink :iri="iriRef['@id']" :label="iriRef.name" />
-        </div>
-      </div>
-      <div v-else>No concepts found</div>
-      <template #footer>
-        <Button label="OK" icon="pi pi-check" @click="showDialog = false" autofocus />
-      </template>
-    </Dialog>
+        <div v-else>No concepts found</div>
+        <template #footer>
+          <Button label="OK" icon="pi pi-check" @click="showDialog = false" autofocus />
+        </template>
+      </Dialog>
+    </div>
+    <div class="footer-buttons">
+      <Button icon="pi pi-times" label="Cancel" class="p-button-secondary one-rem-margin" />
+      <Button icon="pi pi-bolt" label="Test" class="p-button-help one-rem-margin" @click="testQuery" />
+      <Button icon="pi pi-check" label="Save" class="one-rem-margin" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, watch, Ref } from "vue";
-import QueryTree from "../components/querybuilder/QueryTree.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
+import SetDefinitionForm from "../components/querybuilder/SetDefinitionForm.vue";
 import { Helpers, Vocabulary, Services } from "im-library";
-import { QueryObject, QueryRequest, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import PropertyInput from "../components/querybuilder/definitionComponents/PropertyInput.vue";
+import { QueryObject, QueryRequest, Refinement, SearchRequest, SetQueryObject, TTAlias, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import axios from "axios";
-import {
-  AsthmaSubTypesCore,
-  PainInLowerLimbORChestPainMinus,
-  Aged70to74,
-  simpleListSetQuery,
-  simpleListWithExclusionsSetQuery,
-  refinedConceptsSetQuery
-} from "../tests/testData/ExampleQueries";
 import _ from "lodash";
-import { buildIMQuery } from "@/builders/IMQueryBuilder";
 import { Query } from "im-library/dist/types/models/modules/AutoGen";
 import { useToast } from "primevue/usetoast";
-import { ToastMessageOptions } from "primevue/toast";
 const { isObjectHasKeys, isArrayHasLength, isObject } = Helpers.DataTypeCheckers;
 const { IM, RDFS, SHACL } = Vocabulary;
 const { EntityService, QueryService, LoggerService } = Services;
 const toast = useToast();
 
-const includeProperties = [
-  "where",
-  "and",
-  "or",
-  "notExist",
-  "from",
-  "@id",
-  "iri",
-  "path",
-  "property",
-  "is",
-  "includeSupertypes",
-  "includeMembers",
-  "includeSubtypes",
-  "excludeSelf"
-];
 const entityService = new EntityService(axios);
 const queryService = new QueryService(axios);
-const abortController = ref(new AbortController());
-const showDialog = ref(false);
 const testQueryResults: Ref<TTIriRef[]> = ref([]);
-const options = ref({
-  status: [] as TTIriRef[],
-  scheme: [] as TTIriRef[],
-  type: [] as TTIriRef[],
-  boolean: [
-    { name: "True", value: true },
-    { name: "False", value: false }
-  ]
-});
-const selectedNodeKey = ref<number>(0);
-const example = refinedConceptsSetQuery;
-
-onMounted(async () => {
-  options.value.status = await searchByIsA([IM.STATUS]);
-  options.value.scheme = await searchByIsA(["http://endhealth.info/im#Graph"]);
-  options.value.type = await searchByIsA([RDFS.CLASS]);
-});
-
-async function searchByIsA(isA: string[]) {
-  const searchRequest = {} as SearchRequest;
-  searchRequest.isA = isA;
-  if (!isObject(abortController.value)) {
-    abortController.value.abort();
-  }
-
-  abortController.value = new AbortController();
-  const results = await entityService.advancedSearch(searchRequest, abortController.value);
-  return results.map(summary => {
-    return { "@id": summary.iri, name: summary.name };
-  });
-}
-
-const initNode = {
-  key: 0,
-  label: "query",
-  type: {
-    firstType: "org.endeavourhealth.imapi.model.iml.Query"
-  },
-  value: "",
-  children: []
-} as QueryObject;
-const fullQuery = ref<QueryObject>(initNode);
-const currentQueryObject = ref<QueryObject>(initNode);
-const queryNodes = ref<any>({});
+const showDialog: Ref<boolean> = ref(false);
 const imquery: Ref<Query> = ref({} as Query);
+const defaultTTAlias = { includeSubtypes: true } as TTAlias;
+const clauses: Ref<SetQueryObject[]> = ref([]);
 
-queryNodes.value = [fullQuery.value];
+onMounted(() => {
+  addConcept();
+});
 
-watch(
-  () => _.cloneDeep(fullQuery.value),
-  (newVal, oldVal) => {
-    imquery.value = buildIMQuery(newVal);
-  }
-);
-
-function onSelect(nodeContents: any) {
-  currentQueryObject.value = nodeContents;
-}
-
-function cancelChanges() {
-  currentQueryObject.value = {} as QueryObject;
-}
-
-function saveChanges() {
-  console.log("save");
-}
-
-function addProperty() {
-  if (!isArrayHasLength(currentQueryObject.value.children)) {
-    currentQueryObject.value.children = [];
-  }
-  currentQueryObject.value.children!.push({ key: Math.floor(Math.random() * 9999999999999999), selectable: false } as QueryObject);
-}
-
-function updateCurrentObject(newQueryObject: QueryObject) {
-  currentQueryObject.value = newQueryObject;
-  selectedNodeKey.value = newQueryObject.key;
-}
-
-function deleteProperty(propertyKey: number) {
-  currentQueryObject.value.children = currentQueryObject.value.children?.filter(property => property.key !== propertyKey);
-}
-
-async function handleClick() {
-  await navigator.clipboard.writeText(JSON.stringify(imquery.value));
-  toast.add(LoggerService.success("Value copied to clipboard") as ToastMessageOptions);
+function addConcept() {
+  const newObject = {
+    include: true,
+    concept: { ...defaultTTAlias },
+    refinements: [] as Refinement[]
+  } as SetQueryObject;
+  clauses.value.push(newObject);
 }
 
 async function testQuery() {
@@ -209,39 +90,9 @@ async function testQuery() {
   height: 100%;
 }
 
-.tab-content-container {
-  padding: 1rem;
+.query-builder-main-wrapper {
   display: flex;
   flex-flow: column nowrap;
-  justify-content: space-between;
-  height: calc(100vh - 8.7rem);
-}
-
-.property-component {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: baseline !important;
-  justify-content: center;
-  padding: 0.5rem;
-}
-
-.footer-buttons {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: end;
-}
-
-.p-tabview {
-  flex: 1 0;
-  height: 100%;
-}
-
-.one-rem-margin {
-  margin-right: 0.1rem;
-}
-
-.p-tree {
-  height: 100%;
 }
 
 .p-card {
@@ -256,6 +107,43 @@ async function testQuery() {
 
 .json {
   overflow-y: auto;
-  height: calc(100vh - 8.7rem);
+  height: calc(100vh - 11.2rem);
+}
+
+.tab-content-container {
+  padding: 1rem;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  height: calc(100vh - 11.2rem);
+  overflow: scroll;
+}
+
+.property-component {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: baseline !important;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.footer-buttons {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: end;
+  background-color: #ffffff;
+}
+
+.p-tabview {
+  flex: 1 0;
+  height: 100%;
+}
+
+.one-rem-margin {
+  margin-right: 0.1rem;
+}
+
+.p-tree {
+  height: 100%;
 }
 </style>

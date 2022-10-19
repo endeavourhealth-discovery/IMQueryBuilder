@@ -1,19 +1,12 @@
 <template>
-  <AutoComplete
-    :multiple="true"
-    v-model="selectedIriRefs"
-    :suggestions="suggestions"
-    @complete="searchEntity($event)"
-    @item-select="onSelect"
-    @item-unselect="onUnselect"
-  >
+  <AutoComplete :multiple="true" v-model="selectedEntity" :suggestions="suggestions" @complete="searchEntity($event)" @item-select="handleChange">
     <template #item="slotProps"> {{ slotProps.item.name }} - {{ slotProps.item["@id"] }} </template>
     <template #chip="slotProps"> {{ slotProps.value.name }} - {{ slotProps.value["@id"] }} </template>
   </AutoComplete>
 </template>
 
 <script setup lang="ts">
-import { QueryObject, SearchRequest, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
+import { QueryObject, SearchRequest, SetQueryObject, TTAlias, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import { onMounted, PropType, ref } from "vue";
 import { Services, Enums, Helpers, Config } from "im-library";
 import axios from "axios";
@@ -21,38 +14,18 @@ const { EntityService } = Services;
 const { isObject, isObjectHasKeys, isArrayHasLength } = Helpers.DataTypeCheckers;
 
 const props = defineProps({
-  property: { type: Object as PropType<QueryObject>, required: true }
+  ttAlias: { type: Object as PropType<TTAlias>, required: true }
 });
 
 const suggestions = ref();
 const entityService = new EntityService(axios);
 const abortController = ref(new AbortController());
-const selectedIriRefs = ref<TTIriRef[]>([]);
+const selectedEntity = ref();
 
-onMounted(() => {
-  if (isArrayHasLength(props.property.children)) {
-    selectedIriRefs.value = props.property.children?.map(selected => selected.value) as TTIriRef[];
-  } else if (isObjectHasKeys(props.property, ["value"])) {
-    selectedIriRefs.value.push(props.property.value);
-  }
-});
-
-function onSelect(selected: { value: TTIriRef }) {
-  if (!isArrayHasLength(props.property.children)) {
-    props.property.children = [] as QueryObject[];
-  }
-  const iriRef = {
-    key: Math.floor(Math.random() * 9999999999999999),
-    label: selected.value.name,
-    type: { firstType: "org.endeavourhealth.imapi.model.tripletree.TTIriRef" },
-    value: { "@id": selected.value["@id"], name: selected.value.name },
-    selectable: false
-  };
-  props.property.children?.push(iriRef);
-}
-
-function onUnselect(unselected: { value: TTIriRef }) {
-  props.property.children = props.property.children?.filter(iriRef => iriRef.value["@id"] !== unselected.value["@id"]);
+function handleChange(event: any) {
+  selectedEntity.value = [event.value];
+  props.ttAlias["@id"] = event.value["@id"];
+  props.ttAlias.name = event.value.name;
 }
 
 async function searchEntity(searchTerm: any): Promise<void> {
