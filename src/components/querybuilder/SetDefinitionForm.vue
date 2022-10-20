@@ -24,7 +24,11 @@
       <div class="refinement-container">
         <div class="clause-container">
           <Button icon="pi pi-times" class="p-button-rounded p-button-danger p-button-text" @click="removeRefinement(clauseIndex, refinementIndex)" />
-          <EntityAutocomplete :ttAlias="refinement.property" />
+          <EntityAutocomplete
+            :ttAlias="refinement.property"
+            :parentClauseIri="included.concept['@id']"
+            :get-suggestions-method="getAllowablePropertySuggestions"
+          />
           <Dropdown
             v-model="refinement.property.includeSubtypes"
             :options="includeSubtypesOptions"
@@ -33,7 +37,7 @@
             placeholder="Include subtypes"
           />
           <i class="icon pi pi-arrow-right" />
-          <EntityAutocomplete :ttAlias="refinement.is" />
+          <EntityAutocomplete :ttAlias="refinement.is" :parentClauseIri="refinement.property['@id']" :get-suggestions-method="getAllowableRangeSuggestions" />
           <Dropdown
             v-model="refinement.is.includeSubtypes"
             :options="includeSubtypesOptions"
@@ -48,9 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { SetQueryObject, TTAlias, Refinement } from "im-library/dist/types/interfaces/Interfaces";
+import { SetQueryObject, TTAlias, Refinement, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import { onMounted, PropType, ref, Ref } from "vue";
 import EntityAutocomplete from "./definitionComponents/EntityAutocomplete.vue";
+import { Services } from "im-library";
+import axios from "axios";
+const queryService = new Services.QueryService(axios);
 const defaultTTAlias = { includeSubtypes: true } as TTAlias;
 const includeOptions = [
   { name: "include", value: true },
@@ -80,6 +87,14 @@ function addConcept() {
     refinements: [] as Refinement[]
   } as SetQueryObject;
   props.clauses.push(newObject);
+}
+
+async function getAllowablePropertySuggestions(iri: string, searchTerm: string) {
+  return await queryService.getAllowablePropertySuggestions(iri, searchTerm);
+}
+
+async function getAllowableRangeSuggestions(iri: string, searchTerm: string) {
+  return await queryService.getAllowableRangeSuggestions(iri, searchTerm);
 }
 </script>
 
