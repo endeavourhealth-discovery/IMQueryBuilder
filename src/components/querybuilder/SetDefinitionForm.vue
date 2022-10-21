@@ -52,8 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { SetQueryObject, TTAlias, Refinement, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import { onMounted, PropType, ref, Ref } from "vue";
+import { SetQueryObject, TTAlias, Refinement } from "im-library/dist/types/interfaces/Interfaces";
+import { PropType } from "vue";
 import EntityAutocomplete from "./definitionComponents/EntityAutocomplete.vue";
 import { Services } from "im-library";
 import axios from "axios";
@@ -64,7 +64,7 @@ const includeOptions = [
   { name: "exclude", value: false }
 ];
 const includeSubtypesOptions = [
-  { name: "include subtybes", value: true },
+  { name: "include subtypes", value: true },
   { name: "exclude subtypes", value: false }
 ];
 
