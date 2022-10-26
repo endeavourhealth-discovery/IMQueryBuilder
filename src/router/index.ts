@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import QueryBuilder from "../views/QueryBuilder.vue";
 import SetBuilder from "../views/SetBuilder.vue";
+import SimpleQueryBuilder from "../views/SimpleQueryBuilder.vue";
 import { AccessDenied, PageNotFound, SnomedLicense, Services, EntityNotFound, Helpers } from "im-library";
 import store from "@/store/index";
 import { nextTick } from "vue";
@@ -12,8 +13,13 @@ const APP_TITLE = "IM Query Builder";
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/builder/query",
-    name: "SetBuilder",
+    name: "QueryBuilder",
     component: QueryBuilder
+  },
+  {
+    path: "/builder/simplequery",
+    name: "SimpleQueryBuilder",
+    component: SimpleQueryBuilder
   },
   {
     path: "/builder/set",

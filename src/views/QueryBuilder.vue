@@ -83,22 +83,6 @@ const { IM, RDFS, SHACL } = Vocabulary;
 const { EntityService, QueryService, LoggerService } = Services;
 const toast = useToast();
 
-const includeProperties = [
-  "where",
-  "and",
-  "or",
-  "notExist",
-  "from",
-  "@id",
-  "iri",
-  "path",
-  "property",
-  "is",
-  "includeSupertypes",
-  "includeMembers",
-  "includeSubtypes",
-  "excludeSelf"
-];
 const entityService = new EntityService(axios);
 const queryService = new QueryService(axios);
 const abortController = ref(new AbortController());
