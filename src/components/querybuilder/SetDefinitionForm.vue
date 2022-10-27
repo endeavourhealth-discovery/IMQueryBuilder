@@ -2,14 +2,22 @@
   <div v-for="(included, clauseIndex) of clauses" class="clause-wrapper">
     <div class="clause-container">
       <Button icon="pi pi-times" class="p-button-rounded p-button-danger p-button-text" @click="removeClause(clauseIndex)" />
-      <Dropdown v-model="included.include" :options="includeOptions" option-label="name" option-value="value" placeholder="Include or exclude" />
+      <ToggleButton
+        v-model="included.include"
+        onLabel="include"
+        offLabel="exclude"
+        onIcon="pi pi-check"
+        offIcon="pi pi-minus"
+        aria-label="include or exclude"
+      />
       <EntityAutocomplete :ttAlias="included.concept" />
-      <Dropdown
+      <ToggleButton
         v-model="included.concept.includeSubtypes"
-        :options="includeSubtypesOptions"
-        option-label="name"
-        option-value="value"
-        placeholder="Include subtypes"
+        onLabel="include subtypes"
+        offLabel="exclude subtypes"
+        onIcon="pi pi-check"
+        offIcon="pi pi-minus"
+        aria-label="include subtypes"
       />
       <Button icon="pi pi-cog" v-tooltip="'Add refinement'" class="p-button-warning one-rem-margin" @click="addRefinement(clauseIndex)" />
       <Button
@@ -29,21 +37,23 @@
             :parentClauseIri="included.concept['@id']"
             :get-suggestions-method="getAllowablePropertySuggestions"
           />
-          <Dropdown
+          <ToggleButton
             v-model="refinement.property.includeSubtypes"
-            :options="includeSubtypesOptions"
-            option-label="name"
-            option-value="value"
-            placeholder="Include subtypes"
+            onLabel="include subtypes"
+            offLabel="exclude subtypes"
+            onIcon="pi pi-check"
+            offIcon="pi pi-minus"
+            aria-label="include subtypes"
           />
           <i class="icon pi pi-arrow-right" />
           <EntityAutocomplete :ttAlias="refinement.is" :parentClauseIri="refinement.property['@id']" :get-suggestions-method="getAllowableRangeSuggestions" />
-          <Dropdown
+          <ToggleButton
             v-model="refinement.is.includeSubtypes"
-            :options="includeSubtypesOptions"
-            option-label="name"
-            option-value="value"
-            placeholder="Include subtypes"
+            onLabel="include subtypes"
+            offLabel="exclude subtypes"
+            onIcon="pi pi-minus"
+            offIcon="pi pi-times"
+            aria-label="include subtypes"
           />
         </div>
       </div>
@@ -59,15 +69,6 @@ import { Services } from "im-library";
 import axios from "axios";
 const queryService = new Services.QueryService(axios);
 const defaultTTAlias = { includeSubtypes: true } as TTAlias;
-const includeOptions = [
-  { name: "include", value: true },
-  { name: "exclude", value: false }
-];
-const includeSubtypesOptions = [
-  { name: "include subtypes", value: true },
-  { name: "exclude subtypes", value: false }
-];
-
 const props = defineProps({ clauses: { type: Array as PropType<SetQueryObject[]>, required: true } });
 
 function addRefinement(index: number) {

@@ -5,6 +5,7 @@
         <TabPanel header="Edit">
           <div class="tab-content-container">
             <SelectProperties :selectProperties="selectProperties" />
+
             <div class="property-container">
               <SetDefinitionForm :clauses="clauses" />
             </div>
@@ -18,16 +19,22 @@
       <Dialog
         :header="queryLoading ? 'Results' : 'Results: ' + testQueryResults.length"
         v-model:visible="showDialog"
+        maximizable
         :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
-        :style="{ width: '50vw' }"
+        :style="{ width: '80vw' }"
       >
         <div v-if="queryLoading" class="flex flex-row justify-contents-center align-items-center loading-container">
           <ProgressSpinner />
         </div>
         <div v-else-if="!queryLoading && isArrayHasLength(testQueryResults)">
-          <div v-for="iriRef of testQueryResults">
-            <IMViewerLink :iri="iriRef['@id']" :label="iriRef.name" />
-          </div>
+          <DataTable :value="testQueryResults">
+            <Column v-for="key of Object.keys(testQueryResults[0])" :field="key" :header="key">
+              <template #body="{ data }">
+                <IMViewerLink v-if="key === '@id'" :iri="data[key]" />
+                <div v-else>{{ data[key] }}</div>
+              </template>
+            </Column>
+          </DataTable>
         </div>
         <div v-else>No concepts found</div>
         <template #footer>
@@ -63,7 +70,7 @@ const toast = useToast();
 
 const entityService = new EntityService(axios);
 const queryService = new QueryService(axios);
-const testQueryResults: Ref<TTIriRef[]> = ref([]);
+const testQueryResults: Ref<any[]> = ref([]);
 const showDialog: Ref<boolean> = ref(false);
 const imquery: Ref<Query> = ref({} as Query);
 const defaultTTAlias = { includeSubtypes: true } as TTAlias;
@@ -101,10 +108,7 @@ function addConcept() {
 async function testQuery() {
   queryLoading.value = true;
   showDialog.value = true;
-  const result = await queryService.queryIM(imquery.value as unknown as QueryRequest);
-  if (isArrayHasLength(result.entities)) {
-    testQueryResults.value = await entityService.getNames(result.entities.map(entity => entity["@id"]));
-  }
+  testQueryResults.value = (await queryService.queryIM(imquery.value as unknown as QueryRequest)).entities;
   queryLoading.value = false;
 }
 </script>

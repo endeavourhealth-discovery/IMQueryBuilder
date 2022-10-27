@@ -79,6 +79,7 @@ import Chips from "primevue/chips";
 import DataView from "primevue/dataview";
 import Inplace from "primevue/inplace";
 import Chip from "primevue/chip";
+import ToggleButton from "primevue/togglebutton";
 
 import { Amplify, Auth } from "aws-amplify";
 import awsconfig from "./aws-exports";
@@ -166,6 +167,7 @@ const app = createApp(App)
   .component("Chips", Chips)
   .component("DataView", DataView)
   .component("Chip", Chip)
+  .component("ToggleButton", ToggleButton)
   .component("Inplace", Inplace)
   .component("Tag", Tag);
 
