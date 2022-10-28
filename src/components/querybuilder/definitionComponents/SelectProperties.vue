@@ -1,5 +1,8 @@
 <template>
-  <MultiSelect v-model="selectedProperties" :options="propertyOptions" optionLabel="name" placeholder="Select properties" @change="handleChange" />
+  <div class="select-wrapper">
+    <div class="select-header">Select fields:</div>
+    <MultiSelect v-model="selectedProperties" :options="propertyOptions" optionLabel="name" placeholder="Select properties" @change="handleChange" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -31,4 +34,14 @@ function handleChange() {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.select-wrapper {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: baseline !important;
+}
+.select-header {
+  padding-right: 1rem;
+}
+</style>

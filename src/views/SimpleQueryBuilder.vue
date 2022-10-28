@@ -4,11 +4,9 @@
       <TabView ref="tabview">
         <TabPanel header="Edit">
           <div class="tab-content-container">
-            <SelectProperties :selectProperties="selectProperties" />
-
-            <div class="property-container">
-              <SetDefinitionForm :clauses="clauses" />
-            </div>
+            <SelectProperties class="select-container" :selectProperties="selectProperties" />
+            <div class="clause-header">Add rules:</div>
+            <SetDefinitionForm :clauses="clauses" />
           </div>
         </TabPanel>
         <TabPanel header="IM query">
@@ -207,5 +205,14 @@ async function testQuery() {
 
 .p-tree {
   height: 100%;
+}
+.clause-container,
+.select-container {
+  padding: 1rem;
+}
+.clause-header {
+  align-self: center;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
 }
 </style>

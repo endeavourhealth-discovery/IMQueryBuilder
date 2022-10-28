@@ -51,8 +51,8 @@
             v-model="refinement.is.includeSubtypes"
             onLabel="include subtypes"
             offLabel="exclude subtypes"
-            onIcon="pi pi-minus"
-            offIcon="pi pi-times"
+            onIcon="pi pi-check"
+            offIcon="pi pi-minus"
             aria-label="include subtypes"
           />
         </div>
