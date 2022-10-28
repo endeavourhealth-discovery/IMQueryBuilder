@@ -38,6 +38,7 @@
         </div>
         <div v-else>No concepts found</div>
         <template #footer>
+          <Button icon="pi pi-download" label="Download" @click="downloadCSV" />
           <Button label="OK" icon="pi pi-check" @click="showDialog = false" autofocus />
         </template>
       </Dialog>
@@ -77,7 +78,6 @@ const defaultTTAlias = { includeSubtypes: true } as TTAlias;
 const clauses: Ref<SetQueryObject[]> = ref([]);
 const queryLoading: Ref<boolean> = ref(false);
 const selectProperties: Ref<TTIriRef[]> = ref([] as TTIriRef[]);
-
 watch(
   () => _.cloneDeep(clauses.value),
   () => {
@@ -95,6 +95,38 @@ watch(
 onMounted(() => {
   addConcept();
 });
+
+function downloadCSV() {
+  toast.add({ severity: "info", summary: "Preparing download", detail: "Zipping delta files for download...", life: 3000 });
+  const txt = getCSVfromJSON(testQueryResults.value);
+  const url = window.URL.createObjectURL(new Blob([txt]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "results.csv";
+  link.click();
+}
+
+function getCSVfromJSON(json: any[]) {
+  let str = "";
+  const headerKeys = Object.keys(json[0]);
+  for (let keysIndex = 0; keysIndex < headerKeys.length; keysIndex++) {
+    str += headerKeys[keysIndex];
+    if (keysIndex !== headerKeys.length - 1) str += ",";
+  }
+
+  str += "\r\n";
+
+  for (let i = 0; i < json.length; i++) {
+    let line = "";
+    for (const index in json[i]) {
+      if (line != "") line += ",";
+      line += JSON.stringify(json[i][index]);
+    }
+
+    str += line + "\r\n";
+  }
+  return str;
+}
 
 function addConcept() {
   const newObject = {
