@@ -1,12 +1,12 @@
 <template>
   <div class="entity-autocomplete-container">
-    <EntityAutocomplete :property="property" @change="handleChange" />
+    <FullQueryBuilderEntityAutocomplete :property="property" @change="handleChange" />
     <MultiSelect v-if="props.property.children" v-model="included" :options="includeOptions" placeholder="Select inclusions" @change="handleChange" />
   </div>
 </template>
 
 <script setup lang="ts">
-import EntityAutocomplete from "./EntityAutocomplete.vue";
+import FullQueryBuilderEntityAutocomplete from "./FullQueryBuilderEntityAutocomplete.vue";
 import { QueryObject, SimplifiedType, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
 import { onMounted, PropType, ref, Ref } from "vue";
 import { Services, Helpers } from "im-library";

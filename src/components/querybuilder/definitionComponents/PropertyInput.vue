@@ -12,7 +12,7 @@
       <Chips v-else-if="isListOfTextInput" type="text" v-model="property.value" />
       <InputText v-else-if="isTextInput" type="text" v-model="property.value" />
       <Dropdown v-else-if="isBoolean" v-model="property.value" optionLabel="name" :options="options?.boolean" />
-      <EntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
+      <FullQueryBuilderEntityAutocomplete v-else-if="isListOfIriRefs || isIriRef" :property="property" :parentType="parentType" />
       <EntityAutocompleteWithInclusions
         v-else-if="isTTAlias || isListOfTTAlias"
         :property="property"
@@ -30,7 +30,7 @@ import { Services, Helpers } from "im-library";
 import { SimplifiedType } from "im-library/dist/types/interfaces/Interfaces";
 import { computed, onMounted, PropType, ref } from "vue";
 import { QueryObject, TTIriRef } from "im-library/dist/types/interfaces/Interfaces";
-import EntityAutocomplete from "./EntityAutocomplete.vue";
+import FullQueryBuilderEntityAutocomplete from "./FullQueryBuilderEntityAutocomplete.vue";
 import { FieldDto } from "im-library/dist/types/interfaces/modules/QueryBuilder";
 import EntityAutocompleteWithInclusions from "./EntityAutocompleteWithInclusions.vue";
 import PropertyIs from "./PropertyIs.vue";
