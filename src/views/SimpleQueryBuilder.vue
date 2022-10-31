@@ -176,7 +176,7 @@ async function testQuery() {
   flex-flow: column nowrap;
   justify-content: flex-start;
   height: calc(100vh - 11.2rem);
-  overflow: scroll;
+  overflow: auto;
 }
 
 .property-component {
