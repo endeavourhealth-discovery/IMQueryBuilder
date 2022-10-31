@@ -29,6 +29,11 @@
             <Column v-for="key of Object.keys(testQueryResults[0])" :field="key" :header="key">
               <template #body="{ data }">
                 <IMViewerLink v-if="key === '@id'" :iri="data[key]" />
+                <div v-else-if="isArrayHasLength(data[key])">
+                  <div v-for="value of data[key]">
+                    <IMViewerLink :iri="value['@id']" />
+                  </div>
+                </div>
                 <div v-else>{{ data[key] }}</div>
               </template>
             </Column>
@@ -118,7 +123,13 @@ function getCSVfromJSON(json: any[]) {
     let line = "";
     for (const index in json[i]) {
       if (line != "") line += ",";
-      line += JSON.stringify(json[i][index]);
+      if (isArrayHasLength(json[i][index])) {
+        for (const value of json[i][index]) {
+          line += JSON.stringify(value["@id"] || value) + " ";
+        }
+      } else {
+        line += JSON.stringify(json[i][index]);
+      }
     }
 
     str += line + "\r\n";
