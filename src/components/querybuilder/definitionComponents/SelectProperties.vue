@@ -16,12 +16,20 @@ const propertyOptions: Ref<TTIriRef[]> = ref([] as TTIriRef[]);
 const selectedProperties: Ref<TTIriRef[]> = ref([] as TTIriRef[]);
 const props = defineProps({ selectProperties: { type: Array<TTIriRef>, required: true } });
 
+const optionIris = [RDFS.LABEL, IM.CODE, RDF.TYPE, RDFS.SUBCLASS_OF, IM.IS_A, IM.HAS_STATUS, RDFS.COMMENT, IM.SCHEME];
+const defaultSelectedIris = [RDFS.LABEL];
+
 onMounted(async () => {
   propertyOptions.value = await getPropertyOptions();
+  populateDefaultOptions();
 });
 
+function populateDefaultOptions() {
+  selectedProperties.value = propertyOptions.value.filter(option => defaultSelectedIris.includes(option["@id"]));
+}
+
 async function getPropertyOptions() {
-  const response = await entityService.getPartialEntities([RDFS.LABEL, IM.CODE, RDF.TYPE], [RDFS.LABEL]);
+  const response = await entityService.getPartialEntities(optionIris, [RDFS.LABEL]);
   return response.map(entity => {
     return { "@id": entity["@id"], name: entity[RDFS.LABEL] };
   });
